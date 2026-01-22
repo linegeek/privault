@@ -1,8 +1,5 @@
 import type { Subscription } from '../types/subscription';
 
-const SUBSCRIPTIONS_KEY = 'privault-subscriptions';
-const COLUMN_VISIBILITY_KEY = 'privault-subscriptions-column-visibility';
-
 export interface ColumnVisibility extends Record<string, boolean> {
   no: boolean;
   serviceName: boolean;
@@ -25,32 +22,64 @@ export const DEFAULT_COLUMN_VISIBILITY: ColumnVisibility = {
   active: true,
 };
 
-export function getSubscriptions(): Subscription[] {
+export async function getSubscriptions(): Promise<Subscription[]> {
   try {
-    const data = localStorage.getItem(SUBSCRIPTIONS_KEY);
-    return data ? JSON.parse(data) : [];
-  } catch {
+    const subscriptions = await window.electron.ipcRenderer.invoke('subscriptions:getAll');
+    return subscriptions || [];
+  } catch (error) {
+    console.error('Error getting subscriptions:', error);
     return [];
   }
 }
 
-export function saveSubscriptions(subscriptions: Subscription[]): void {
-  localStorage.setItem(SUBSCRIPTIONS_KEY, JSON.stringify(subscriptions));
+export async function saveSubscription(subscription: Subscription): Promise<boolean> {
+  try {
+    const result = await window.electron.ipcRenderer.invoke('subscriptions:create', subscription);
+    return result?.success ?? false;
+  } catch (error) {
+    console.error('Error saving subscription:', error);
+    return false;
+  }
 }
 
-export function getColumnVisibility(): ColumnVisibility {
+export async function updateSubscription(subscription: Subscription): Promise<boolean> {
   try {
-    const data = localStorage.getItem(COLUMN_VISIBILITY_KEY);
-    if (data) {
-      const parsed = JSON.parse(data) as Partial<ColumnVisibility>;
-      return { ...DEFAULT_COLUMN_VISIBILITY, ...parsed } as ColumnVisibility;
+    const result = await window.electron.ipcRenderer.invoke('subscriptions:update', subscription);
+    return result?.success ?? false;
+  } catch (error) {
+    console.error('Error updating subscription:', error);
+    return false;
+  }
+}
+
+export async function deleteSubscription(id: string): Promise<boolean> {
+  try {
+    const result = await window.electron.ipcRenderer.invoke('subscriptions:delete', id);
+    return result?.success ?? false;
+  } catch (error) {
+    console.error('Error deleting subscription:', error);
+    return false;
+  }
+}
+
+export async function getColumnVisibility(): Promise<ColumnVisibility> {
+  try {
+    const visibility = await window.electron.ipcRenderer.invoke('column-visibility:get');
+    if (visibility) {
+      return { ...DEFAULT_COLUMN_VISIBILITY, ...visibility } as ColumnVisibility;
     }
-  } catch {
-    // ignore
+  } catch (error) {
+    console.error('Error getting column visibility:', error);
   }
   return DEFAULT_COLUMN_VISIBILITY;
 }
 
-export function saveColumnVisibility(visibility: ColumnVisibility): void {
-  localStorage.setItem(COLUMN_VISIBILITY_KEY, JSON.stringify(visibility));
+export async function saveColumnVisibility(visibility: ColumnVisibility): Promise<boolean> {
+  try {
+    const result = await window.electron.ipcRenderer.invoke('column-visibility:save', visibility);
+    return result?.success ?? false;
+  } catch (error) {
+    console.error('Error saving column visibility:', error);
+    return false;
+  }
 }

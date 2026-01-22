@@ -29,7 +29,9 @@ import type { Subscription, Period, ExpiryFilter } from '../../types/subscriptio
 import { PERIOD_OPTIONS } from '../../types/subscription';
 import {
   getSubscriptions,
-  saveSubscriptions,
+  saveSubscription,
+  updateSubscription,
+  deleteSubscription,
   getColumnVisibility,
   saveColumnVisibility,
   type ColumnVisibility,
@@ -215,10 +217,20 @@ function SubscriptionDialog({
 }
 
 export default function SubscriptionsManager() {
-  const [subscriptions, setSubscriptions] = useState<Subscription[]>(getSubscriptions);
-  const [columnVisibility, setColumnVisibilityState] = useState<ColumnVisibility>(getColumnVisibility);
+  const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
+  const [columnVisibility, setColumnVisibilityState] = useState<ColumnVisibility>({
+    no: true,
+    serviceName: true,
+    dueDate: true,
+    amount: true,
+    period: true,
+    tags: true,
+    note: true,
+    active: true,
+  });
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Subscription | null>(null);
+  const [loading, setLoading] = useState(true);
 
   // Filters
   const [filterServiceName, setFilterServiceName] = useState<string>('');
@@ -227,10 +239,34 @@ export default function SubscriptionsManager() {
   const [filterTags, setFilterTags] = useState<string[]>([]);
   const [filterNote, setFilterNote] = useState('');
 
-  const setColumnVisibility = useCallback((v: ColumnVisibility) => {
-    setColumnVisibilityState(v);
-    saveColumnVisibility(v);
+  // Load data on mount
+  useEffect(() => {
+    loadData();
   }, []);
+
+  const loadData = async () => {
+    setLoading(true);
+    try {
+      const [subs, visibility] = await Promise.all([
+        getSubscriptions(),
+        getColumnVisibility(),
+      ]);
+      setSubscriptions(subs);
+      setColumnVisibilityState(visibility);
+    } catch (error) {
+      console.error('Error loading data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const setColumnVisibility = useCallback(
+    async (v: ColumnVisibility) => {
+      setColumnVisibilityState(v);
+      await saveColumnVisibility(v);
+    },
+    []
+  );
 
   const allTags = useMemo(() => {
     const set = new Set<string>();
@@ -275,56 +311,60 @@ export default function SubscriptionsManager() {
     setDialogOpen(true);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (window.confirm('Delete this subscription?')) {
-      const next = subscriptions.filter((s) => s.id !== id);
-      setSubscriptions(next);
-      saveSubscriptions(next);
+      const success = await deleteSubscription(id);
+      if (success) {
+        await loadData();
+      } else {
+        alert('Failed to delete subscription');
+      }
     }
   };
 
-  const handleSave = (data: SubscriptionFormData) => {
+  const handleSave = async (data: SubscriptionFormData) => {
     const amount = parseFloat(data.amount) || 0;
-    if (editing) {
-      const next = subscriptions.map((s) =>
-        s.id === editing.id
-          ? {
-              ...s,
-              serviceName: data.serviceName.trim(),
-              dueDate: data.dueDate,
-              amount,
-              period: data.period,
-              tags: data.tags,
-              note: data.note,
-              active: data.active,
-            }
-          : s
-      );
-      setSubscriptions(next);
-      saveSubscriptions(next);
+    const subscription: Subscription = {
+      id: editing?.id || crypto.randomUUID(),
+      serviceName: data.serviceName.trim(),
+      dueDate: data.dueDate,
+      amount,
+      period: data.period,
+      tags: data.tags,
+      note: data.note,
+      active: data.active,
+    };
+
+    const success = editing
+      ? await updateSubscription(subscription)
+      : await saveSubscription(subscription);
+
+    if (success) {
+      await loadData();
+      setEditing(null);
+      setDialogOpen(false);
     } else {
-      const sub: Subscription = {
-        id: crypto.randomUUID(),
-        serviceName: data.serviceName.trim(),
-        dueDate: data.dueDate,
-        amount,
-        period: data.period,
-        tags: data.tags,
-        note: data.note,
-        active: data.active,
-      };
-      const next = [...subscriptions, sub];
-      setSubscriptions(next);
-      saveSubscriptions(next);
+      alert('Failed to save subscription');
     }
-    setEditing(null);
-    setDialogOpen(false);
   };
 
-  const toggleColumn = (key: keyof ColumnVisibility) => {
-    const next = { ...columnVisibility, [key]: !columnVisibility[key] };
-    setColumnVisibility(next);
+  const toggleColumn = async (key: string) => {
+    const next = {
+      ...columnVisibility,
+      [key]: !columnVisibility[key as keyof ColumnVisibility],
+    };
+    await setColumnVisibility(next);
   };
+
+  if (loading) {
+    return (
+      <ScreenLayout>
+        <Box sx={{ p: 3, textAlign: 'center' }}>
+          <Typography sx={{ color: 'rgba(255,255,255,0.8)' }}>Loading...</Typography>
+        </Box>
+      </ScreenLayout>
+    );
+  }
 
   return (
     <ScreenLayout>
@@ -420,7 +460,7 @@ export default function SubscriptionsManager() {
           <ColumnVisibilityMenu
             columns={COLUMN_LABELS}
             visibility={columnVisibility}
-            onToggle={(key) => toggleColumn(key as keyof ColumnVisibility)}
+            onToggle={toggleColumn}
           />
         </Box>
 
@@ -463,52 +503,60 @@ export default function SubscriptionsManager() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {filtered.map((s, i) => (
-                <TableRow key={s.id} hover>
-                  {columnVisibility.no && (
-                    <TableCell sx={{ color: 'rgba(255,255,255,0.8)' }}>{i + 1}</TableCell>
-                  )}
-                  {columnVisibility.serviceName && (
-                    <TableCell sx={{ color: 'rgba(255,255,255,0.8)' }}>{s.serviceName}</TableCell>
-                  )}
-                  {columnVisibility.dueDate && (
-                    <TableCell sx={{ color: 'rgba(255,255,255,0.8)' }}>{s.dueDate}</TableCell>
-                  )}
-                  {columnVisibility.amount && (
-                    <TableCell sx={{ color: 'rgba(255,255,255,0.8)' }}>
-                      {formatCurrency(s.amount)}
-                    </TableCell>
-                  )}
-                  {columnVisibility.period && (
-                    <TableCell sx={{ color: 'rgba(255,255,255,0.8)' }}>{s.period}</TableCell>
-                  )}
-                  {columnVisibility.tags && (
-                    <TableCell sx={{ color: 'rgba(255,255,255,0.8)' }}>
-                      <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
-                        {s.tags.map((t) => (
-                          <Chip key={t} label={t} size="small" />
-                        ))}
-                      </Box>
-                    </TableCell>
-                  )}
-                  {columnVisibility.note && (
-                    <TableCell sx={{ color: 'rgba(255,255,255,0.8)' }}>{s.note}</TableCell>
-                  )}
-                  {columnVisibility.active && (
-                    <TableCell sx={{ color: 'rgba(255,255,255,0.8)' }}>
-                      {s.active ? 'Yes' : 'No'}
-                    </TableCell>
-                  )}
-                  <TableCell>
-                    <IconButton size="small" onClick={() => handleEdit(s)} sx={{ color: '#a78bfa' }}>
-                      <EditIcon fontSize="small" />
-                    </IconButton>
-                    <IconButton size="small" onClick={() => handleDelete(s.id)} sx={{ color: '#f87171' }}>
-                      <DeleteIcon fontSize="small" />
-                    </IconButton>
+              {filtered.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={9} sx={{ textAlign: 'center', color: 'rgba(255,255,255,0.6)' }}>
+                    No subscriptions found
                   </TableCell>
                 </TableRow>
-              ))}
+              ) : (
+                filtered.map((s, i) => (
+                  <TableRow key={s.id} hover>
+                    {columnVisibility.no && (
+                      <TableCell sx={{ color: 'rgba(255,255,255,0.8)' }}>{i + 1}</TableCell>
+                    )}
+                    {columnVisibility.serviceName && (
+                      <TableCell sx={{ color: 'rgba(255,255,255,0.8)' }}>{s.serviceName}</TableCell>
+                    )}
+                    {columnVisibility.dueDate && (
+                      <TableCell sx={{ color: 'rgba(255,255,255,0.8)' }}>{s.dueDate}</TableCell>
+                    )}
+                    {columnVisibility.amount && (
+                      <TableCell sx={{ color: 'rgba(255,255,255,0.8)' }}>
+                        {formatCurrency(s.amount)}
+                      </TableCell>
+                    )}
+                    {columnVisibility.period && (
+                      <TableCell sx={{ color: 'rgba(255,255,255,0.8)' }}>{s.period}</TableCell>
+                    )}
+                    {columnVisibility.tags && (
+                      <TableCell sx={{ color: 'rgba(255,255,255,0.8)' }}>
+                        <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+                          {s.tags.map((t) => (
+                            <Chip key={t} label={t} size="small" />
+                          ))}
+                        </Box>
+                      </TableCell>
+                    )}
+                    {columnVisibility.note && (
+                      <TableCell sx={{ color: 'rgba(255,255,255,0.8)' }}>{s.note}</TableCell>
+                    )}
+                    {columnVisibility.active && (
+                      <TableCell sx={{ color: 'rgba(255,255,255,0.8)' }}>
+                        {s.active ? 'Yes' : 'No'}
+                      </TableCell>
+                    )}
+                    <TableCell>
+                      <IconButton size="small" onClick={() => handleEdit(s)} sx={{ color: '#a78bfa' }}>
+                        <EditIcon fontSize="small" />
+                      </IconButton>
+                      <IconButton size="small" onClick={() => handleDelete(s.id)} sx={{ color: '#f87171' }}>
+                        <DeleteIcon fontSize="small" />
+                      </IconButton>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
         </TableContainer>

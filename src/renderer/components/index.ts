@@ -23,3 +23,6 @@ export { default as LogoText } from './typography/LogoText';
 // Table components
 export { default as ColumnVisibilityMenu } from './tables/ColumnVisibilityMenu';
 export type { ColumnVisibility } from './tables/ColumnVisibilityMenu';
+
+// Routing components
+export { default as ProtectedRoute } from './routing/ProtectedRoute';

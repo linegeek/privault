@@ -1,7 +1,8 @@
 import { useNavigate } from 'react-router-dom';
-import { Box, Typography } from '@mui/material';
-import { Subscriptions as SubscriptionsIcon } from '@mui/icons-material';
+import { Box, Typography, IconButton } from '@mui/material';
+import { Subscriptions as SubscriptionsIcon, Logout as LogoutIcon } from '@mui/icons-material';
 import { ScreenLayout, ModuleCard } from '../components';
+import { useAuth } from '../contexts/AuthContext';
 
 const MODULES = [
   {
@@ -16,21 +17,30 @@ const MODULES = [
 
 export default function HomeScreen() {
   const navigate = useNavigate();
+  const { logout } = useAuth();
+
+  const handleLogout = async () => {
+    await logout();
+  };
 
   return (
     <ScreenLayout>
       <Box sx={{ p: 4 }}>
-        <Typography
-          variant="h4"
-          sx={{
-            fontWeight: 700,
-            mb: 4,
-            color: 'rgba(255,255,255,0.9)',
-            letterSpacing: 2,
-          }}
-        >
-          Dashboard
-        </Typography>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+          <Typography
+            variant="h4"
+            sx={{
+              fontWeight: 700,
+              color: 'rgba(255,255,255,0.9)',
+              letterSpacing: 2,
+            }}
+          >
+            Dashboard
+          </Typography>
+          <IconButton onClick={handleLogout} sx={{ color: 'rgba(255,255,255,0.8)' }} title="Logout">
+            <LogoutIcon />
+          </IconButton>
+        </Box>
 
         <Box
           sx={{
