@@ -1,28 +1,8 @@
-import type { Subscription } from '../types/subscription';
+import type { Subscription } from '../../types/common/subscription';
+import type { ColumnVisibility } from '../../types/common/columnVisibility';
+import { DEFAULT_COLUMN_VISIBILITY } from '../constants/columnVisibility';
 
-export interface ColumnVisibility extends Record<string, boolean> {
-  no: boolean;
-  serviceName: boolean;
-  dueDate: boolean;
-  amount: boolean;
-  period: boolean;
-  tags: boolean;
-  note: boolean;
-  active: boolean;
-}
-
-export const DEFAULT_COLUMN_VISIBILITY: ColumnVisibility = {
-  no: true,
-  serviceName: true,
-  dueDate: true,
-  amount: true,
-  period: true,
-  tags: true,
-  note: true,
-  active: true,
-};
-
-export async function getSubscriptions(): Promise<Subscription[]> {
+export async function getAllSubscriptions(): Promise<Subscription[]> {
   try {
     const subscriptions = await window.electron.ipcRenderer.invoke('subscriptions:getAll');
     return subscriptions || [];
@@ -32,7 +12,7 @@ export async function getSubscriptions(): Promise<Subscription[]> {
   }
 }
 
-export async function saveSubscription(subscription: Subscription): Promise<boolean> {
+export async function createSubscription(subscription: Subscription): Promise<boolean> {
   try {
     const result = await window.electron.ipcRenderer.invoke('subscriptions:create', subscription);
     return result?.success ?? false;

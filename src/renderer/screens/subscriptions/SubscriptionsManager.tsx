@@ -25,17 +25,18 @@ import {
   Edit as EditIcon,
   Delete as DeleteIcon,
 } from '@mui/icons-material';
-import type { Subscription, Period, ExpiryFilter } from '../../types/subscription';
-import { PERIOD_OPTIONS } from '../../types/subscription';
+import type { Subscription, Period } from '../../../types/common/subscription';
+import type { ExpiryFilter } from '../../../types/renderer/subscription';
+import type { ColumnVisibility } from '../../../types/common/columnVisibility';
+import { PERIOD_OPTIONS } from '../../constants/subscription';
 import {
-  getSubscriptions,
-  saveSubscription,
+  getAllSubscriptions,
+  createSubscription,
   updateSubscription,
   deleteSubscription,
   getColumnVisibility,
   saveColumnVisibility,
-  type ColumnVisibility,
-} from '../../utils/storage';
+} from '../../services/subscriptionService';
 import {
   ScreenLayout,
   PageHeader,
@@ -248,7 +249,7 @@ export default function SubscriptionsManager() {
     setLoading(true);
     try {
       const [subs, visibility] = await Promise.all([
-        getSubscriptions(),
+        getAllSubscriptions(),
         getColumnVisibility(),
       ]);
       setSubscriptions(subs);
@@ -337,7 +338,7 @@ export default function SubscriptionsManager() {
 
     const success = editing
       ? await updateSubscription(subscription)
-      : await saveSubscription(subscription);
+      : await createSubscription(subscription);
 
     if (success) {
       await loadData();

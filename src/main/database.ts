@@ -1,8 +1,7 @@
 import Database from 'better-sqlite3';
 import path from 'path';
 import { app } from 'electron';
-import crypto from 'crypto';
-import CryptoJS from 'crypto-js';
+import { hashPassword, encryptData, decryptData } from './utils/crypto';
 
 const DB_NAME = 'privault.db';
 let db: Database.Database | null = null;
@@ -49,19 +48,6 @@ function initializeDatabase() {
   db.exec(`
     CREATE INDEX IF NOT EXISTS idx_subscriptions_user_id ON subscriptions(user_id);
   `);
-}
-
-export function hashPassword(password: string): string {
-  return crypto.createHash('sha256').update(password).digest('hex');
-}
-
-export function encryptData(data: string, password: string): string {
-  return CryptoJS.AES.encrypt(data, password).toString();
-}
-
-export function decryptData(encryptedData: string, password: string): string {
-  const bytes = CryptoJS.AES.decrypt(encryptedData, password);
-  return bytes.toString(CryptoJS.enc.Utf8);
 }
 
 export function closeDatabase() {

@@ -2,10 +2,6 @@ import { useState } from 'react';
 import { Button, Menu, MenuItem, ListItemIcon, ListItemText, Checkbox } from '@mui/material';
 import { ViewColumn as ViewColumnIcon } from '@mui/icons-material';
 
-export interface ColumnVisibility {
-  [key: string]: boolean;
-}
-
 interface ColumnVisibilityMenuProps {
   columns: Record<string, string>; // key -> label mapping
   visibility: Record<string, boolean>;

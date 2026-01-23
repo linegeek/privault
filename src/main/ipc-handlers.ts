@@ -1,7 +1,8 @@
 import { ipcMain } from 'electron';
-import { getDatabase, hashPassword, encryptData, decryptData } from './database';
-import type { Subscription } from '../renderer/types/subscription';
-import type { ColumnVisibility } from '../renderer/utils/storage';
+import { getDatabase } from './database';
+import { hashPassword, encryptData, decryptData } from './utils/crypto';
+import type { Subscription } from '../types/common/subscription';
+import type { ColumnVisibility } from '../types/common/columnVisibility';
 
 let currentUserId: string | null = null;
 let currentPassword: string | null = null;
