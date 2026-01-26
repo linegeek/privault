@@ -15,11 +15,13 @@ export const handleGetSubscriptions = async (
   const db = getDatabase();
 
   const whereConditions = ['user_id = ?'];
-  filter.tags.forEach((tag) => {
-    const encryptedTag = encryptData(tag, password);
+  if (filter?.tags) {
+    filter.tags.forEach((tag) => {
+      const encryptedTag = encryptData(tag, password);
 
-    whereConditions.push(`tags LIKE '%${encryptedTag}%'`);
-  });
+      whereConditions.push(`tags LIKE '%${encryptedTag}%'`);
+    });
+  }
 
   const rows = db
     .prepare(
