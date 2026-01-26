@@ -69,6 +69,8 @@ export const handleUpdateSubscription = async (
       content = ?, tags = ?, updated_at = ?
     WHERE id = ? AND user_id = ?`,
   ).run(content, tags, now, subscription.id, userId);
+
+  return { success: true };
 };
 
 export const handleDeleteSubscription = async (
