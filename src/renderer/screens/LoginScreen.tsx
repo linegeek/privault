@@ -19,7 +19,7 @@ export default function LoginScreen() {
 
   const handleLogin = async () => {
     if (!password.trim()) {
-      setError('Please enter your master password');
+      setError('Please enter your password');
       return;
     }
 
@@ -60,7 +60,7 @@ export default function LoginScreen() {
 
         <PasswordField
           fullWidth
-          label="Master Password"
+          label="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && !loading && handleLogin()}

@@ -13,3 +13,7 @@ export function decryptData(encryptedData: string, password: string): string {
   const bytes = CryptoJS.AES.decrypt(encryptedData, password);
   return bytes.toString(CryptoJS.enc.Utf8);
 }
+
+export function generateId() {
+  return CryptoJS.lib.WordArray.random(16).toString();
+}
