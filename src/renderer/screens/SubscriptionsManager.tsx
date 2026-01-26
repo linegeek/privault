@@ -32,7 +32,7 @@ import {
   deleteSubscription,
   getColumnVisibility,
   saveColumnVisibility,
-} from '../../services';
+} from '../services';
 import {
   ScreenLayout,
   PageHeader,
@@ -41,12 +41,12 @@ import {
   ColumnVisibilityMenu,
   SubscriptionDialog,
   ColumnVisibility,
-} from '../../components';
+} from '../components';
 import {
   ExpiryFilter,
   Subscription,
   SubscriptionFormData,
-} from '../../../types';
+} from '../../types';
 
 const COLUMN_LABELS: Record<keyof ColumnVisibility, string> = {
   no: 'No',
