@@ -42,11 +42,7 @@ import {
   SubscriptionDialog,
   ColumnVisibility,
 } from '../components';
-import {
-  ExpiryFilter,
-  Subscription,
-  SubscriptionFormData,
-} from '../../types';
+import { ExpiryFilter, Subscription, SubscriptionFormData } from '../../types';
 
 const COLUMN_LABELS: Record<keyof ColumnVisibility, string> = {
   no: 'No',
@@ -138,8 +134,14 @@ export default function SubscriptionsManager() {
     return Array.from(set).sort();
   }, [subscriptions]);
 
-  const filtered = useMemo(() => {
-    return subscriptions.filter((s) => {
+  const renderedSubscriptions = useMemo(() => {
+    const sortedSubscriptions = subscriptions.slice().sort((a, b) => {
+      const ats = new Date(a.dueDate).getTime();
+      const bts = new Date(b.dueDate).getTime();
+      return ats - bts;
+    });
+
+    return sortedSubscriptions.filter((s) => {
       if (filterServiceName && s.serviceName !== filterServiceName)
         return false;
       if (filterActive && !s.active) return false;
@@ -401,7 +403,7 @@ export default function SubscriptionsManager() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {filtered.length === 0 ? (
+              {renderedSubscriptions.length === 0 ? (
                 <TableRow>
                   <TableCell
                     colSpan={9}
@@ -411,7 +413,7 @@ export default function SubscriptionsManager() {
                   </TableCell>
                 </TableRow>
               ) : (
-                filtered.map((s, i) => (
+                renderedSubscriptions.map((s, i) => (
                   <TableRow key={s.id} hover>
                     {columnVisibility.no && (
                       <TableCell sx={{ color: 'rgba(255,255,255,0.8)' }}>
