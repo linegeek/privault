@@ -4,15 +4,26 @@ import { DBRecord } from '../../types/main/db-record';
 import { encryptSubscription, toSubscription } from '../services/subscriptions';
 import { IpcMainInvokeEvent } from 'electron';
 import { Subscription } from '../../types/common/subscription';
-import { generateId } from '../utils/crypto';
+import { encryptData, generateId } from '../utils/crypto';
+import { DBSearchFilter } from '../../types/common/searchFilter';
 
-export const handleGetSubscriptions = async () => {
+export const handleGetSubscriptions = async (
+  _event: IpcMainInvokeEvent,
+  filter: DBSearchFilter,
+) => {
   const { userId, password } = requireAuth();
   const db = getDatabase();
 
+  const whereConditions = ['user_id = ?'];
+  filter.tags.forEach((tag) => {
+    const encryptedTag = encryptData(tag, password);
+
+    whereConditions.push(`tags LIKE '%${encryptedTag}%'`);
+  });
+
   const rows = db
     .prepare(
-      'SELECT * FROM subscriptions WHERE user_id = ? ORDER BY created_at DESC',
+      `SELECT * FROM subscriptions WHERE ${whereConditions.join(' AND ')} ORDER BY created_at DESC`,
     )
     .all(userId) as DBRecord[];
 

@@ -25,10 +25,6 @@ import {
   Edit as EditIcon,
   Delete as DeleteIcon,
 } from '@mui/icons-material';
-import type { Subscription, Period } from '../../../types/common/subscription';
-import type { ExpiryFilter } from '../../../types/renderer/subscription';
-import type { ColumnVisibility } from '../../../types/common/columnVisibility';
-import { PERIOD_OPTIONS } from '../../constants/subscription';
 import {
   getAllSubscriptions,
   createSubscription,
@@ -36,16 +32,21 @@ import {
   deleteSubscription,
   getColumnVisibility,
   saveColumnVisibility,
-} from '../../services/subscriptionService';
+} from '../../services';
 import {
   ScreenLayout,
   PageHeader,
   GradientButton,
-  FormDialog,
-  CurrencyField,
   TagsAutocomplete,
   ColumnVisibilityMenu,
+  SubscriptionDialog,
+  ColumnVisibility,
 } from '../../components';
+import {
+  ExpiryFilter,
+  Subscription,
+  SubscriptionFormData,
+} from '../../../types';
 
 const COLUMN_LABELS: Record<keyof ColumnVisibility, string> = {
   no: 'No',
@@ -76,159 +77,19 @@ function expiresInWeek(dateStr: string): boolean {
   return d >= now && d <= weekFromNow;
 }
 
-interface SubscriptionFormData {
-  serviceName: string;
-  dueDate: string;
-  amount: string;
-  period: Period;
-  tags: string[];
-  note: string;
-  active: boolean;
-}
-
-const emptyForm: SubscriptionFormData = {
-  serviceName: '',
-  dueDate: '',
-  amount: '',
-  period: '1 month',
-  tags: [],
-  note: '',
-  active: true,
-};
-
-interface SubscriptionDialogProps {
-  open: boolean;
-  onClose: () => void;
-  onSave: (data: SubscriptionFormData) => void;
-  initial?: Subscription | null;
-  allTags: string[];
-}
-
-function SubscriptionDialog({
-  open,
-  onClose,
-  onSave,
-  initial,
-  allTags,
-}: SubscriptionDialogProps) {
-  const [form, setForm] = useState<SubscriptionFormData>({ ...emptyForm });
-
-  useEffect(() => {
-    if (open) {
-      setForm(
-        initial
-          ? {
-              serviceName: initial.serviceName,
-              dueDate: initial.dueDate,
-              amount: String(initial.amount),
-              period: initial.period,
-              tags: [...initial.tags],
-              note: initial.note,
-              active: initial.active,
-            }
-          : { ...emptyForm }
-      );
-    }
-  }, [open, initial]);
-
-  const handleChange = (field: keyof SubscriptionFormData, value: unknown) => {
-    setForm((p) => ({ ...p, [field]: value }));
-  };
-
-  const handleSubmit = () => {
-    if (!form.serviceName.trim() || !form.dueDate) return;
-    onSave({ ...form });
-    onClose();
-  };
-
-  const isValid = form.serviceName.trim() !== '' && form.dueDate !== '';
-
-  return (
-    <FormDialog
-      open={open}
-      onClose={onClose}
-      onSubmit={handleSubmit}
-      title={initial ? 'Edit Subscription' : 'Add Subscription'}
-      submitLabel={initial ? 'Save' : 'Add'}
-      submitDisabled={!isValid}
-    >
-      <TextField
-        label="Service Name"
-        required
-        value={form.serviceName}
-        onChange={(e) => handleChange('serviceName', e.target.value)}
-      />
-      <TextField
-        label="Due Date"
-        type="date"
-        required
-        value={form.dueDate}
-        onChange={(e) => handleChange('dueDate', e.target.value)}
-        InputLabelProps={{ shrink: true }}
-      />
-      <CurrencyField
-        label="Amount"
-        value={form.amount}
-        onChange={(e) => handleChange('amount', e.target.value)}
-      />
-      <FormControl fullWidth>
-        <InputLabel>Period</InputLabel>
-        <Select
-          value={form.period}
-          label="Period"
-          onChange={(e) => handleChange('period', e.target.value as Period)}
-        >
-          {PERIOD_OPTIONS.map((p) => (
-            <MenuItem key={p} value={p}>
-              {p}
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
-      <TagsAutocomplete
-        options={allTags}
-        value={form.tags}
-        onChange={(_, v) =>
-          handleChange(
-            'tags',
-            v
-              .map((x) => (typeof x === 'string' ? x.trim() : ''))
-              .filter(Boolean)
-          )
-        }
-      />
-      <TextField
-        label="Note"
-        value={form.note}
-        onChange={(e) => handleChange('note', e.target.value)}
-        multiline
-        rows={2}
-      />
-      <FormControlLabel
-        control={
-          <Checkbox
-            checked={form.active}
-            onChange={(e) => handleChange('active', e.target.checked)}
-          />
-        }
-        label="Active"
-      />
-    </FormDialog>
-  );
-}
-
 export default function SubscriptionsManager() {
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
-  const [columnVisibility, setColumnVisibilityState] = useState<ColumnVisibility>({
-    no: true,
-    serviceName: true,
-    dueDate: true,
-    amount: true,
-    period: true,
-    tags: true,
-    note: true,
-    active: true,
-  });
+  const [columnVisibility, setColumnVisibilityState] =
+    useState<ColumnVisibility>({
+      no: true,
+      serviceName: true,
+      dueDate: true,
+      amount: true,
+      period: true,
+      tags: true,
+      note: true,
+      active: true,
+    });
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Subscription | null>(null);
   const [loading, setLoading] = useState(true);
@@ -261,13 +122,10 @@ export default function SubscriptionsManager() {
     }
   };
 
-  const setColumnVisibility = useCallback(
-    async (v: ColumnVisibility) => {
-      setColumnVisibilityState(v);
-      await saveColumnVisibility(v);
-    },
-    []
-  );
+  const setColumnVisibility = useCallback(async (v: ColumnVisibility) => {
+    setColumnVisibilityState(v);
+    await saveColumnVisibility(v);
+  }, []);
 
   const allTags = useMemo(() => {
     const set = new Set<string>();
@@ -282,15 +140,22 @@ export default function SubscriptionsManager() {
 
   const filtered = useMemo(() => {
     return subscriptions.filter((s) => {
-      if (filterServiceName && s.serviceName !== filterServiceName) return false;
+      if (filterServiceName && s.serviceName !== filterServiceName)
+        return false;
       if (filterActive && !s.active) return false;
-      if (filterNote && !s.note.toLowerCase().includes(filterNote.toLowerCase())) return false;
+      if (
+        filterNote &&
+        !s.note.toLowerCase().includes(filterNote.toLowerCase())
+      )
+        return false;
       if (filterTags.length > 0) {
         const hasAny = filterTags.some((t) => s.tags.includes(t));
         if (!hasAny) return false;
       }
-      if (filterExpiry === 'expired_only' && !isExpired(s.dueDate)) return false;
-      if (filterExpiry === 'expires_in_week' && !expiresInWeek(s.dueDate)) return false;
+      if (filterExpiry === 'expired_only' && !isExpired(s.dueDate))
+        return false;
+      if (filterExpiry === 'expires_in_week' && !expiresInWeek(s.dueDate))
+        return false;
       return true;
     });
   }, [
@@ -361,7 +226,9 @@ export default function SubscriptionsManager() {
     return (
       <ScreenLayout>
         <Box sx={{ p: 3, textAlign: 'center' }}>
-          <Typography sx={{ color: 'rgba(255,255,255,0.8)' }}>Loading...</Typography>
+          <Typography sx={{ color: 'rgba(255,255,255,0.8)' }}>
+            Loading...
+          </Typography>
         </Box>
       </ScreenLayout>
     );
@@ -389,7 +256,10 @@ export default function SubscriptionsManager() {
             border: '1px solid rgba(255,255,255,0.1)',
           }}
         >
-          <Typography variant="subtitle2" sx={{ color: 'rgba(255,255,255,0.7)', mb: 1 }}>
+          <Typography
+            variant="subtitle2"
+            sx={{ color: 'rgba(255,255,255,0.7)', mb: 1 }}
+          >
             Search Filters
           </Typography>
           <Box
@@ -405,7 +275,9 @@ export default function SubscriptionsManager() {
               <Select
                 value={filterServiceName}
                 label="Service Name"
-                onChange={(e: SelectChangeEvent<string>) => setFilterServiceName(e.target.value)}
+                onChange={(e: SelectChangeEvent<string>) =>
+                  setFilterServiceName(e.target.value)
+                }
               >
                 <MenuItem value="">All</MenuItem>
                 {serviceNames.map((n) => (
@@ -457,7 +329,14 @@ export default function SubscriptionsManager() {
         </Paper>
 
         {/* Toolbar: Column visibility */}
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            mb: 2,
+          }}
+        >
           <ColumnVisibilityMenu
             columns={COLUMN_LABELS}
             visibility={columnVisibility}
@@ -476,27 +355,45 @@ export default function SubscriptionsManager() {
           <Table size="small">
             <TableHead>
               <TableRow>
-                {columnVisibility.no && <TableCell sx={{ color: 'rgba(255,255,255,0.9)' }}>No</TableCell>}
+                {columnVisibility.no && (
+                  <TableCell sx={{ color: 'rgba(255,255,255,0.9)' }}>
+                    No
+                  </TableCell>
+                )}
                 {columnVisibility.serviceName && (
-                  <TableCell sx={{ color: 'rgba(255,255,255,0.9)' }}>Service Name</TableCell>
+                  <TableCell sx={{ color: 'rgba(255,255,255,0.9)' }}>
+                    Service Name
+                  </TableCell>
                 )}
                 {columnVisibility.dueDate && (
-                  <TableCell sx={{ color: 'rgba(255,255,255,0.9)' }}>Due Date</TableCell>
+                  <TableCell sx={{ color: 'rgba(255,255,255,0.9)' }}>
+                    Due Date
+                  </TableCell>
                 )}
                 {columnVisibility.amount && (
-                  <TableCell sx={{ color: 'rgba(255,255,255,0.9)' }}>Amount</TableCell>
+                  <TableCell sx={{ color: 'rgba(255,255,255,0.9)' }}>
+                    Amount
+                  </TableCell>
                 )}
                 {columnVisibility.period && (
-                  <TableCell sx={{ color: 'rgba(255,255,255,0.9)' }}>Period</TableCell>
+                  <TableCell sx={{ color: 'rgba(255,255,255,0.9)' }}>
+                    Period
+                  </TableCell>
                 )}
                 {columnVisibility.tags && (
-                  <TableCell sx={{ color: 'rgba(255,255,255,0.9)' }}>Tags</TableCell>
+                  <TableCell sx={{ color: 'rgba(255,255,255,0.9)' }}>
+                    Tags
+                  </TableCell>
                 )}
                 {columnVisibility.note && (
-                  <TableCell sx={{ color: 'rgba(255,255,255,0.9)' }}>Note</TableCell>
+                  <TableCell sx={{ color: 'rgba(255,255,255,0.9)' }}>
+                    Note
+                  </TableCell>
                 )}
                 {columnVisibility.active && (
-                  <TableCell sx={{ color: 'rgba(255,255,255,0.9)' }}>Active</TableCell>
+                  <TableCell sx={{ color: 'rgba(255,255,255,0.9)' }}>
+                    Active
+                  </TableCell>
                 )}
                 <TableCell sx={{ color: 'rgba(255,255,255,0.9)', width: 100 }}>
                   Actions
@@ -506,7 +403,10 @@ export default function SubscriptionsManager() {
             <TableBody>
               {filtered.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={9} sx={{ textAlign: 'center', color: 'rgba(255,255,255,0.6)' }}>
+                  <TableCell
+                    colSpan={9}
+                    sx={{ textAlign: 'center', color: 'rgba(255,255,255,0.6)' }}
+                  >
                     No subscriptions found
                   </TableCell>
                 </TableRow>
@@ -514,13 +414,19 @@ export default function SubscriptionsManager() {
                 filtered.map((s, i) => (
                   <TableRow key={s.id} hover>
                     {columnVisibility.no && (
-                      <TableCell sx={{ color: 'rgba(255,255,255,0.8)' }}>{i + 1}</TableCell>
+                      <TableCell sx={{ color: 'rgba(255,255,255,0.8)' }}>
+                        {i + 1}
+                      </TableCell>
                     )}
                     {columnVisibility.serviceName && (
-                      <TableCell sx={{ color: 'rgba(255,255,255,0.8)' }}>{s.serviceName}</TableCell>
+                      <TableCell sx={{ color: 'rgba(255,255,255,0.8)' }}>
+                        {s.serviceName}
+                      </TableCell>
                     )}
                     {columnVisibility.dueDate && (
-                      <TableCell sx={{ color: 'rgba(255,255,255,0.8)' }}>{s.dueDate}</TableCell>
+                      <TableCell sx={{ color: 'rgba(255,255,255,0.8)' }}>
+                        {s.dueDate}
+                      </TableCell>
                     )}
                     {columnVisibility.amount && (
                       <TableCell sx={{ color: 'rgba(255,255,255,0.8)' }}>
@@ -528,11 +434,15 @@ export default function SubscriptionsManager() {
                       </TableCell>
                     )}
                     {columnVisibility.period && (
-                      <TableCell sx={{ color: 'rgba(255,255,255,0.8)' }}>{s.period}</TableCell>
+                      <TableCell sx={{ color: 'rgba(255,255,255,0.8)' }}>
+                        {s.period}
+                      </TableCell>
                     )}
                     {columnVisibility.tags && (
                       <TableCell sx={{ color: 'rgba(255,255,255,0.8)' }}>
-                        <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+                        <Box
+                          sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}
+                        >
                           {s.tags.map((t) => (
                             <Chip key={t} label={t} size="small" />
                           ))}
@@ -540,7 +450,9 @@ export default function SubscriptionsManager() {
                       </TableCell>
                     )}
                     {columnVisibility.note && (
-                      <TableCell sx={{ color: 'rgba(255,255,255,0.8)' }}>{s.note}</TableCell>
+                      <TableCell sx={{ color: 'rgba(255,255,255,0.8)' }}>
+                        {s.note}
+                      </TableCell>
                     )}
                     {columnVisibility.active && (
                       <TableCell sx={{ color: 'rgba(255,255,255,0.8)' }}>
@@ -548,10 +460,18 @@ export default function SubscriptionsManager() {
                       </TableCell>
                     )}
                     <TableCell>
-                      <IconButton size="small" onClick={() => handleEdit(s)} sx={{ color: '#a78bfa' }}>
+                      <IconButton
+                        size="small"
+                        onClick={() => handleEdit(s)}
+                        sx={{ color: '#a78bfa' }}
+                      >
                         <EditIcon fontSize="small" />
                       </IconButton>
-                      <IconButton size="small" onClick={() => handleDelete(s.id)} sx={{ color: '#f87171' }}>
+                      <IconButton
+                        size="small"
+                        onClick={() => handleDelete(s.id)}
+                        sx={{ color: '#f87171' }}
+                      >
                         <DeleteIcon fontSize="small" />
                       </IconButton>
                     </TableCell>

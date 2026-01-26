@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Box, Alert } from '@mui/material';
+import { Alert } from '@mui/material';
 import {
   ScreenLayout,
   GlassCard,

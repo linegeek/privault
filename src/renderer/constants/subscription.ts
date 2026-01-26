@@ -1,4 +1,4 @@
-import type { Period } from '../../types/common/subscription';
+import { Period } from "../../types";
 
 export const PERIOD_OPTIONS: Period[] = [
   '1 week',

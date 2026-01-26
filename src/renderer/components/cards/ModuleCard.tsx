@@ -1,4 +1,3 @@
-import { ReactNode } from 'react';
 import { Card, CardContent, CardActionArea, Box, Typography } from '@mui/material';
 import { SvgIconComponent } from '@mui/icons-material';
 

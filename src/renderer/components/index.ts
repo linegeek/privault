@@ -16,6 +16,7 @@ export { default as GlassCard } from './cards/GlassCard';
 
 // Dialog components
 export { default as FormDialog } from './dialogs/FormDialog';
+export { default as SubscriptionDialog } from './dialogs/SubscriptionDialog';
 
 // Typography components
 export { default as LogoText } from './typography/LogoText';

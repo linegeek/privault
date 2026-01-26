@@ -1,6 +1,5 @@
-import type { Subscription } from '../../types/common/subscription';
-import type { ColumnVisibility } from '../../types/common/columnVisibility';
-import { DEFAULT_COLUMN_VISIBILITY } from '../constants/columnVisibility';
+import { ColumnVisibility, Subscription } from '../../types';
+import { DEFAULT_COLUMN_VISIBILITY } from '../constants';
 
 export async function getAllSubscriptions(): Promise<Subscription[]> {
   try {
