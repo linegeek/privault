@@ -3,7 +3,7 @@ import { ThemeProvider, createTheme, CssBaseline } from '@mui/material';
 import { AuthProvider } from './contexts/AuthContext';
 import LoginScreen from './screens/LoginScreen';
 import HomeScreen from './screens/HomeScreen';
-import SubscriptionsManager from './screens/subscriptions/SubscriptionsManager';
+import SubscriptionsManager from './screens/SubscriptionsManager';
 import ProtectedRoute from './components/routing/ProtectedRoute';
 import './App.css';
 

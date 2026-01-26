@@ -1,6 +1,7 @@
 {
-  "name": "electron-react-boilerplate",
-  "description": "A foundation for scalable desktop apps",
+  "name": "privault",
+  "productName": "Privault",
+  "description": "My Private Data Vault",
   "keywords": [
     "electron",
     "boilerplate",
@@ -183,8 +184,8 @@
     "webpack-merge": "^6.0.1"
   },
   "build": {
-    "productName": "ElectronReact",
-    "appId": "org.erb.ElectronReact",
+    "productName": "Privault",
+    "appId": "org.spiredigital.privault",
     "asar": true,
     "afterSign": ".erb/scripts/notarize.js",
     "asarUnpack": "**\\*.{node,dll}",
