@@ -44,6 +44,7 @@ import {
 } from '../components';
 import { formatCurrency, isExpired, expiresInWeek } from '../utils';
 import { ExpiryFilter, Subscription, SubscriptionFormData } from '../../types';
+import { containsIgnoreCase } from '../utils/string';
 
 const COLUMN_LABELS: Record<keyof ColumnVisibility, string> = {
   no: 'No',
@@ -125,22 +126,30 @@ export default function SubscriptionsManager() {
     });
 
     return sortedSubscriptions.filter((s) => {
-      if (filterServiceName && s.serviceName !== filterServiceName)
-        return false;
-      if (filterActive && !s.active) return false;
       if (
-        filterNote &&
-        !s.note.toLowerCase().includes(filterNote.toLowerCase())
-      )
+        filterServiceName &&
+        !containsIgnoreCase(s.serviceName, filterServiceName)
+      ) {
         return false;
+      }
+      if (filterActive && !s.active) {
+        return false;
+      }
+      if (filterNote && !containsIgnoreCase(s.note, filterNote)) {
+        return false;
+      }
       if (filterTags.length > 0) {
         const hasAny = filterTags.some((t) => s.tags.includes(t));
-        if (!hasAny) return false;
+        if (!hasAny) {
+          return false;
+        }
       }
-      if (filterExpiry === 'expired_only' && !isExpired(s.dueDate))
+      if (filterExpiry === 'expired_only' && !isExpired(s.dueDate)) {
         return false;
-      if (filterExpiry === 'expires_in_week' && !expiresInWeek(s.dueDate))
+      }
+      if (filterExpiry === 'expires_in_week' && !expiresInWeek(s.dueDate)) {
         return false;
+      }
       return true;
     });
   }, [
