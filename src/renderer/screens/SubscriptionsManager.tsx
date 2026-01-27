@@ -1,7 +1,6 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import {
   Box,
-  TextField,
   Table,
   TableBody,
   TableCell,
@@ -10,20 +9,15 @@ import {
   TableRow,
   Paper,
   IconButton,
-  FormControlLabel,
-  Checkbox,
   Chip,
   Typography,
-  FormControl,
-  InputLabel,
-  Select,
-  SelectChangeEvent,
-  MenuItem,
+  Badge,
 } from '@mui/material';
 import {
   Add as AddIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
+  FilterList as FilterListIcon,
 } from '@mui/icons-material';
 import {
   getAllSubscriptions,
@@ -37,10 +31,10 @@ import {
   ScreenLayout,
   PageHeader,
   GradientButton,
-  TagsAutocomplete,
   ColumnVisibilityMenu,
   SubscriptionDialog,
   ColumnVisibility,
+  SearchFiltersDialog,
 } from '../components';
 import { formatCurrency, isExpired, expiresInWeek } from '../utils';
 import { ExpiryFilter, Subscription, SubscriptionFormData } from '../../types';
@@ -73,6 +67,7 @@ export default function SubscriptionsManager() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Subscription | null>(null);
   const [loading, setLoading] = useState(true);
+  const [filtersDialogOpen, setFiltersDialogOpen] = useState(false);
 
   // Filters
   const [filterServiceName, setFilterServiceName] = useState<string>('');
@@ -113,10 +108,15 @@ export default function SubscriptionsManager() {
     return Array.from(set).sort();
   }, [subscriptions]);
 
-  const serviceNames = useMemo(() => {
-    const set = new Set(subscriptions.map((s) => s.serviceName));
-    return Array.from(set).sort();
-  }, [subscriptions]);
+  const activeFiltersCount = useMemo(() => {
+    let count = 0;
+    if (filterServiceName) count++;
+    if (filterExpiry !== 'all') count++;
+    if (!filterActive) count++; // true is the default
+    if (filterTags.length > 0) count++;
+    if (filterNote) count++;
+    return count;
+  }, [filterServiceName, filterExpiry, filterActive, filterTags, filterNote]);
 
   const renderedSubscriptions = useMemo(() => {
     const sortedSubscriptions = subscriptions.slice().sort((a, b) => {
@@ -241,94 +241,14 @@ export default function SubscriptionsManager() {
           }
         />
 
-        {/* Filters */}
-        <Paper
-          sx={{
-            p: 2,
-            mb: 2,
-            background: 'rgba(255,255,255,0.05)',
-            border: '1px solid rgba(255,255,255,0.1)',
-          }}
-        >
-          <Typography
-            variant="subtitle2"
-            sx={{ color: 'rgba(255,255,255,0.7)', mb: 1 }}
-          >
-            Search Filters
-          </Typography>
-          <Box
-            sx={{
-              display: 'flex',
-              flexWrap: 'wrap',
-              gap: 2,
-              alignItems: 'center',
-            }}
-          >
-            <FormControl size="small" sx={{ minWidth: 180 }}>
-              <InputLabel>Service Name</InputLabel>
-              <Select
-                value={filterServiceName}
-                label="Service Name"
-                onChange={(e: SelectChangeEvent<string>) =>
-                  setFilterServiceName(e.target.value)
-                }
-              >
-                <MenuItem value="">All</MenuItem>
-                {serviceNames.map((n) => (
-                  <MenuItem key={n} value={n}>
-                    {n}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-            <FormControl size="small" sx={{ minWidth: 180 }}>
-              <InputLabel>Expiry</InputLabel>
-              <Select
-                value={filterExpiry}
-                label="Expiry"
-                onChange={(e: SelectChangeEvent<ExpiryFilter>) =>
-                  setFilterExpiry(e.target.value as ExpiryFilter)
-                }
-              >
-                <MenuItem value="all">All</MenuItem>
-                <MenuItem value="expires_in_week">Expires in a week</MenuItem>
-                <MenuItem value="expired_only">Expired Only</MenuItem>
-              </Select>
-            </FormControl>
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={filterActive}
-                  onChange={(e) => setFilterActive(e.target.checked)}
-                />
-              }
-              label="Active"
-              sx={{ color: 'rgba(255,255,255,0.8)' }}
-            />
-            <TagsAutocomplete
-              options={allTags}
-              value={filterTags}
-              onChange={(_, v) => setFilterTags(v)}
-              size="small"
-              sx={{ minWidth: 200 }}
-            />
-            <TextField
-              size="small"
-              label="Note"
-              value={filterNote}
-              onChange={(e) => setFilterNote(e.target.value)}
-              sx={{ minWidth: 180 }}
-            />
-          </Box>
-        </Paper>
-
-        {/* Toolbar: Column visibility */}
+        {/* Toolbar: Filter and Column visibility buttons */}
         <Box
           sx={{
             display: 'flex',
-            justifyContent: 'space-between',
+            justifyContent: 'flex-end',
             alignItems: 'center',
             mb: 2,
+            gap: 1,
           }}
         >
           <ColumnVisibilityMenu
@@ -336,6 +256,19 @@ export default function SubscriptionsManager() {
             visibility={columnVisibility}
             onToggle={toggleColumn}
           />
+          <Badge
+            badgeContent={activeFiltersCount}
+            color="primary"
+            invisible={activeFiltersCount === 0}
+          >
+            <IconButton
+              onClick={() => setFiltersDialogOpen(true)}
+              sx={{ color: 'rgba(255,255,255,0.8)' }}
+              title="Search Filters"
+            >
+              <FilterListIcon />
+            </IconButton>
+          </Badge>
         </Box>
 
         {/* Table */}
@@ -344,52 +277,54 @@ export default function SubscriptionsManager() {
           sx={{
             background: 'rgba(255,255,255,0.05)',
             border: '1px solid rgba(255,255,255,0.1)',
+            maxHeight: 'calc(100vh - 168px)',
+            overflow: 'auto',
           }}
         >
-          <Table size="small">
+          <Table size="small" stickyHeader>
             <TableHead>
               <TableRow>
                 {columnVisibility.no && (
-                  <TableCell sx={{ color: 'rgba(255,255,255,0.9)' }}>
+                  <TableCell sx={{ color: 'rgba(255,255,255,0.9)', backgroundColor: 'rgba(0,0,0,0.8)' }}>
                     No
                   </TableCell>
                 )}
                 {columnVisibility.serviceName && (
-                  <TableCell sx={{ color: 'rgba(255,255,255,0.9)' }}>
+                  <TableCell sx={{ color: 'rgba(255,255,255,0.9)', backgroundColor: 'rgba(0,0,0,0.8)' }}>
                     Service Name
                   </TableCell>
                 )}
                 {columnVisibility.dueDate && (
-                  <TableCell sx={{ color: 'rgba(255,255,255,0.9)' }}>
+                  <TableCell sx={{ color: 'rgba(255,255,255,0.9)', backgroundColor: 'rgba(0,0,0,0.8)' }}>
                     Due Date
                   </TableCell>
                 )}
                 {columnVisibility.amount && (
-                  <TableCell sx={{ color: 'rgba(255,255,255,0.9)' }}>
+                  <TableCell sx={{ color: 'rgba(255,255,255,0.9)', backgroundColor: 'rgba(0,0,0,0.8)' }}>
                     Amount
                   </TableCell>
                 )}
                 {columnVisibility.period && (
-                  <TableCell sx={{ color: 'rgba(255,255,255,0.9)' }}>
+                  <TableCell sx={{ color: 'rgba(255,255,255,0.9)', backgroundColor: 'rgba(0,0,0,0.8)' }}>
                     Period
                   </TableCell>
                 )}
                 {columnVisibility.tags && (
-                  <TableCell sx={{ color: 'rgba(255,255,255,0.9)' }}>
+                  <TableCell sx={{ color: 'rgba(255,255,255,0.9)', backgroundColor: 'rgba(0,0,0,0.8)' }}>
                     Tags
                   </TableCell>
                 )}
                 {columnVisibility.note && (
-                  <TableCell sx={{ color: 'rgba(255,255,255,0.9)' }}>
+                  <TableCell sx={{ color: 'rgba(255,255,255,0.9)', backgroundColor: 'rgba(0,0,0,0.8)' }}>
                     Note
                   </TableCell>
                 )}
                 {columnVisibility.active && (
-                  <TableCell sx={{ color: 'rgba(255,255,255,0.9)' }}>
+                  <TableCell sx={{ color: 'rgba(255,255,255,0.9)', backgroundColor: 'rgba(0,0,0,0.8)' }}>
                     Active
                   </TableCell>
                 )}
-                <TableCell sx={{ color: 'rgba(255,255,255,0.9)', width: 100 }}>
+                <TableCell sx={{ color: 'rgba(255,255,255,0.9)', backgroundColor: 'rgba(0,0,0,0.8)', width: 100 }}>
                   Actions
                 </TableCell>
               </TableRow>
@@ -484,6 +419,22 @@ export default function SubscriptionsManager() {
           }}
           onSave={handleSave}
           initial={editing}
+          allTags={allTags}
+        />
+
+        <SearchFiltersDialog
+          open={filtersDialogOpen}
+          onClose={() => setFiltersDialogOpen(false)}
+          filterServiceName={filterServiceName}
+          setFilterServiceName={setFilterServiceName}
+          filterExpiry={filterExpiry}
+          setFilterExpiry={setFilterExpiry}
+          filterActive={filterActive}
+          setFilterActive={setFilterActive}
+          filterTags={filterTags}
+          setFilterTags={setFilterTags}
+          filterNote={filterNote}
+          setFilterNote={setFilterNote}
           allTags={allTags}
         />
       </Box>

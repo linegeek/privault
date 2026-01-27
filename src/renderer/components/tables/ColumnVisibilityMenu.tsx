@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Button, Menu, MenuItem, ListItemIcon, ListItemText, Checkbox } from '@mui/material';
+import { IconButton, Menu, MenuItem, ListItemIcon, ListItemText, Checkbox } from '@mui/material';
 import { ViewColumn as ViewColumnIcon } from '@mui/icons-material';
 
 interface ColumnVisibilityMenuProps {
@@ -13,19 +13,18 @@ export default function ColumnVisibilityMenu({
   columns,
   visibility,
   onToggle,
-  buttonText = 'Column visibility',
 }: ColumnVisibilityMenuProps) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
   return (
     <>
-      <Button
-        startIcon={<ViewColumnIcon />}
+      <IconButton
         onClick={(e) => setAnchorEl(e.currentTarget)}
         sx={{ color: 'rgba(255,255,255,0.8)' }}
+        title="Column visibility"
       >
-        {buttonText}
-      </Button>
+        <ViewColumnIcon />
+      </IconButton>
       <Menu
         anchorEl={anchorEl}
         open={!!anchorEl}
