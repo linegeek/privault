@@ -42,6 +42,7 @@ import {
   SubscriptionDialog,
   ColumnVisibility,
 } from '../components';
+import { formatCurrency, isExpired, expiresInWeek } from '../utils';
 import { ExpiryFilter, Subscription, SubscriptionFormData } from '../../types';
 
 const COLUMN_LABELS: Record<keyof ColumnVisibility, string> = {
@@ -54,24 +55,6 @@ const COLUMN_LABELS: Record<keyof ColumnVisibility, string> = {
   note: 'Note',
   active: 'Active',
 };
-
-function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-  }).format(amount);
-}
-
-function isExpired(dateStr: string): boolean {
-  return new Date(dateStr) < new Date();
-}
-
-function expiresInWeek(dateStr: string): boolean {
-  const d = new Date(dateStr);
-  const now = new Date();
-  const weekFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
-  return d >= now && d <= weekFromNow;
-}
 
 export default function SubscriptionsManager() {
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
