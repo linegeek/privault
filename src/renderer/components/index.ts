@@ -5,4 +5,5 @@ export * from './forms';
 export * from './layout';
 export * from './menus';
 export * from './routing';
+export * from './tables';
 export * from './typography';

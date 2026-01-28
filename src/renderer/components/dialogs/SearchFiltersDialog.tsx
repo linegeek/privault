@@ -1,21 +1,14 @@
+import { useMemo } from 'react';
 import {
   Dialog,
   DialogTitle,
   DialogContent,
   Box,
-  TextField,
-  FormControl,
-  InputLabel,
-  Select,
-  SelectChangeEvent,
-  MenuItem,
-  FormControlLabel,
-  Checkbox,
   IconButton,
 } from '@mui/material';
 import { Close as CloseIcon } from '@mui/icons-material';
-import { ExpiryFilter } from '../../../types';
-import { TagsAutocomplete } from '../forms';
+import { ExpiryFilter, FieldDefinition } from '../../../types';
+import { CustomForm } from '../forms';
 
 interface SearchFiltersDialogProps {
   open: boolean;
@@ -48,6 +41,71 @@ export default function SearchFiltersDialog({
   setFilterNote,
   allTags,
 }: SearchFiltersDialogProps) {
+  const fields: FieldDefinition[] = useMemo(
+    () => [
+      {
+        name: 'filterServiceName',
+        type: 'text' as const,
+        label: 'Service Name',
+        size: 'small',
+      },
+      {
+        name: 'filterExpiry',
+        type: 'select' as const,
+        label: 'Expiry',
+        options: ['all', 'expires_in_week', 'expired_only'],
+        size: 'small',
+      },
+      {
+        name: 'filterTags',
+        type: 'tags' as const,
+        label: 'Tags',
+        options: allTags,
+        size: 'small',
+      },
+      {
+        name: 'filterNote',
+        type: 'text' as const,
+        label: 'Note',
+        size: 'small',
+      },
+      {
+        name: 'filterActive',
+        type: 'checkbox' as const,
+        label: 'Active',
+      },
+    ],
+    [allTags],
+  );
+
+  const values = {
+    filterServiceName,
+    filterExpiry,
+    filterTags,
+    filterNote,
+    filterActive,
+  };
+
+  const handleChange = (field: string, value: unknown) => {
+    switch (field) {
+      case 'filterServiceName':
+        setFilterServiceName(value as string);
+        break;
+      case 'filterExpiry':
+        setFilterExpiry(value as ExpiryFilter);
+        break;
+      case 'filterTags':
+        setFilterTags(value as string[]);
+        break;
+      case 'filterNote':
+        setFilterNote(value as string);
+        break;
+      case 'filterActive':
+        setFilterActive(value as boolean);
+        break;
+    }
+  };
+
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle
@@ -68,49 +126,7 @@ export default function SearchFiltersDialog({
       </DialogTitle>
       <DialogContent>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
-          <TextField
-            size="small"
-            label="Service Name"
-            value={filterServiceName}
-            onChange={(e) => setFilterServiceName(e.target.value)}
-            fullWidth
-          />
-          <FormControl size="small" fullWidth>
-            <InputLabel>Expiry</InputLabel>
-            <Select
-              value={filterExpiry}
-              label="Expiry"
-              onChange={(e: SelectChangeEvent<ExpiryFilter>) =>
-                setFilterExpiry(e.target.value as ExpiryFilter)
-              }
-            >
-              <MenuItem value="all">All</MenuItem>
-              <MenuItem value="expires_in_week">Expires in a week</MenuItem>
-              <MenuItem value="expired_only">Expired Only</MenuItem>
-            </Select>
-          </FormControl>
-          <TagsAutocomplete
-            options={allTags}
-            value={filterTags}
-            onChange={(_, v) => setFilterTags(v)}
-            size="small"
-          />
-          <TextField
-            size="small"
-            label="Note"
-            value={filterNote}
-            onChange={(e) => setFilterNote(e.target.value)}
-            fullWidth
-          />
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={filterActive}
-                onChange={(e) => setFilterActive(e.target.checked)}
-              />
-            }
-            label="Active"
-          />
+          <CustomForm fields={fields} values={values} onChange={handleChange} />
         </Box>
       </DialogContent>
     </Dialog>

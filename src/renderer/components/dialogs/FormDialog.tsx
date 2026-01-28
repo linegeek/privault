@@ -38,7 +38,7 @@ export default function FormDialog({
           {children}
         </Box>
       </DialogContent>
-      <DialogActions>
+      <DialogActions sx={{ p: 3, pt: 0 }}>
         <Button onClick={onClose}>{cancelLabel}</Button>
         <GradientButton onClick={onSubmit} disabled={submitDisabled}>
           {submitLabel}

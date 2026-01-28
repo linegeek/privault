@@ -1,22 +1,12 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import {
   Box,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  IconButton,
   Chip,
-  Typography,
   Badge,
+  IconButton,
 } from '@mui/material';
 import {
   Add as AddIcon,
-  Edit as EditIcon,
-  Delete as DeleteIcon,
   FilterList as FilterListIcon,
 } from '@mui/icons-material';
 import {
@@ -34,6 +24,7 @@ import {
   ColumnVisibilityMenu,
   SubscriptionDialog,
   SearchFiltersDialog,
+  CustomTable,
 } from '../components';
 import {
   formatCurrency,
@@ -46,6 +37,7 @@ import {
   ExpiryFilter,
   Subscription,
   SubscriptionFormData,
+  ColumnDefinition,
 } from '../../types';
 
 const COLUMN_LABELS: Record<keyof ColumnVisibility, string> = {
@@ -224,17 +216,61 @@ export default function SubscriptionsManager() {
     await setColumnVisibility(next);
   };
 
-  if (loading) {
-    return (
-      <ScreenLayout>
-        <Box sx={{ p: 3, textAlign: 'center' }}>
-          <Typography sx={{ color: 'rgba(255,255,255,0.8)' }}>
-            Loading...
-          </Typography>
-        </Box>
-      </ScreenLayout>
-    );
-  }
+  const columns: ColumnDefinition<Subscription>[] = useMemo(
+    () => [
+      {
+        key: 'no',
+        label: 'No',
+        visible: columnVisibility.no,
+        render: (_value, _row, index) => index !== undefined ? index + 1 : '',
+      },
+      {
+        key: 'serviceName',
+        label: 'Service Name',
+        visible: columnVisibility.serviceName,
+      },
+      {
+        key: 'dueDate',
+        label: 'Due Date',
+        visible: columnVisibility.dueDate,
+      },
+      {
+        key: 'amount',
+        label: 'Amount',
+        visible: columnVisibility.amount,
+        render: (value) => formatCurrency(value as number),
+      },
+      {
+        key: 'period',
+        label: 'Period',
+        visible: columnVisibility.period,
+      },
+      {
+        key: 'tags',
+        label: 'Tags',
+        visible: columnVisibility.tags,
+        render: (value) => (
+          <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+            {(value as string[]).map((t) => (
+              <Chip key={t} label={t} size="small" />
+            ))}
+          </Box>
+        ),
+      },
+      {
+        key: 'note',
+        label: 'Note',
+        visible: columnVisibility.note,
+      },
+      {
+        key: 'active',
+        label: 'Active',
+        visible: columnVisibility.active,
+        render: (value) => (value ? 'Yes' : 'No'),
+      },
+    ],
+    [columnVisibility],
+  );
 
   return (
     <ScreenLayout>
@@ -280,190 +316,15 @@ export default function SubscriptionsManager() {
         </Box>
 
         {/* Table */}
-        <TableContainer
-          component={Paper}
-          sx={{
-            background: 'rgba(255,255,255,0.05)',
-            border: '1px solid rgba(255,255,255,0.1)',
-            maxHeight: 'calc(100vh - 168px)',
-            overflow: 'auto',
-          }}
-        >
-          <Table size="small" stickyHeader>
-            <TableHead>
-              <TableRow>
-                {columnVisibility.no && (
-                  <TableCell
-                    sx={{
-                      color: 'rgba(255,255,255,0.9)',
-                      backgroundColor: 'rgba(0,0,0,0.8)',
-                    }}
-                  >
-                    No
-                  </TableCell>
-                )}
-                {columnVisibility.serviceName && (
-                  <TableCell
-                    sx={{
-                      color: 'rgba(255,255,255,0.9)',
-                      backgroundColor: 'rgba(0,0,0,0.8)',
-                    }}
-                  >
-                    Service Name
-                  </TableCell>
-                )}
-                {columnVisibility.dueDate && (
-                  <TableCell
-                    sx={{
-                      color: 'rgba(255,255,255,0.9)',
-                      backgroundColor: 'rgba(0,0,0,0.8)',
-                    }}
-                  >
-                    Due Date
-                  </TableCell>
-                )}
-                {columnVisibility.amount && (
-                  <TableCell
-                    sx={{
-                      color: 'rgba(255,255,255,0.9)',
-                      backgroundColor: 'rgba(0,0,0,0.8)',
-                    }}
-                  >
-                    Amount
-                  </TableCell>
-                )}
-                {columnVisibility.period && (
-                  <TableCell
-                    sx={{
-                      color: 'rgba(255,255,255,0.9)',
-                      backgroundColor: 'rgba(0,0,0,0.8)',
-                    }}
-                  >
-                    Period
-                  </TableCell>
-                )}
-                {columnVisibility.tags && (
-                  <TableCell
-                    sx={{
-                      color: 'rgba(255,255,255,0.9)',
-                      backgroundColor: 'rgba(0,0,0,0.8)',
-                    }}
-                  >
-                    Tags
-                  </TableCell>
-                )}
-                {columnVisibility.note && (
-                  <TableCell
-                    sx={{
-                      color: 'rgba(255,255,255,0.9)',
-                      backgroundColor: 'rgba(0,0,0,0.8)',
-                    }}
-                  >
-                    Note
-                  </TableCell>
-                )}
-                {columnVisibility.active && (
-                  <TableCell
-                    sx={{
-                      color: 'rgba(255,255,255,0.9)',
-                      backgroundColor: 'rgba(0,0,0,0.8)',
-                    }}
-                  >
-                    Active
-                  </TableCell>
-                )}
-                <TableCell
-                  sx={{
-                    color: 'rgba(255,255,255,0.9)',
-                    backgroundColor: 'rgba(0,0,0,0.8)',
-                    width: 100,
-                  }}
-                >
-                  Actions
-                </TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {renderedSubscriptions.length === 0 ? (
-                <TableRow>
-                  <TableCell
-                    colSpan={9}
-                    sx={{ textAlign: 'center', color: 'rgba(255,255,255,0.6)' }}
-                  >
-                    No subscriptions found
-                  </TableCell>
-                </TableRow>
-              ) : (
-                renderedSubscriptions.map((s, i) => (
-                  <TableRow key={s.id} hover>
-                    {columnVisibility.no && (
-                      <TableCell sx={{ color: 'rgba(255,255,255,0.8)' }}>
-                        {i + 1}
-                      </TableCell>
-                    )}
-                    {columnVisibility.serviceName && (
-                      <TableCell sx={{ color: 'rgba(255,255,255,0.8)' }}>
-                        {s.serviceName}
-                      </TableCell>
-                    )}
-                    {columnVisibility.dueDate && (
-                      <TableCell sx={{ color: 'rgba(255,255,255,0.8)' }}>
-                        {s.dueDate}
-                      </TableCell>
-                    )}
-                    {columnVisibility.amount && (
-                      <TableCell sx={{ color: 'rgba(255,255,255,0.8)' }}>
-                        {formatCurrency(s.amount)}
-                      </TableCell>
-                    )}
-                    {columnVisibility.period && (
-                      <TableCell sx={{ color: 'rgba(255,255,255,0.8)' }}>
-                        {s.period}
-                      </TableCell>
-                    )}
-                    {columnVisibility.tags && (
-                      <TableCell sx={{ color: 'rgba(255,255,255,0.8)' }}>
-                        <Box
-                          sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}
-                        >
-                          {s.tags.map((t) => (
-                            <Chip key={t} label={t} size="small" />
-                          ))}
-                        </Box>
-                      </TableCell>
-                    )}
-                    {columnVisibility.note && (
-                      <TableCell sx={{ color: 'rgba(255,255,255,0.8)' }}>
-                        {s.note}
-                      </TableCell>
-                    )}
-                    {columnVisibility.active && (
-                      <TableCell sx={{ color: 'rgba(255,255,255,0.8)' }}>
-                        {s.active ? 'Yes' : 'No'}
-                      </TableCell>
-                    )}
-                    <TableCell>
-                      <IconButton
-                        size="small"
-                        onClick={() => handleEdit(s)}
-                        sx={{ color: '#a78bfa' }}
-                      >
-                        <EditIcon fontSize="small" />
-                      </IconButton>
-                      <IconButton
-                        size="small"
-                        onClick={() => handleDelete(s.id)}
-                        sx={{ color: '#f87171' }}
-                      >
-                        <DeleteIcon fontSize="small" />
-                      </IconButton>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </TableContainer>
+        <CustomTable<Subscription>
+          columns={columns}
+          data={renderedSubscriptions}
+          loading={loading}
+          emptyMessage="No subscriptions found"
+          onEdit={handleEdit}
+          onDelete={(row) => handleDelete(row.id)}
+          getRowKey={(row) => row.id}
+        />
 
         <SubscriptionDialog
           open={dialogOpen}

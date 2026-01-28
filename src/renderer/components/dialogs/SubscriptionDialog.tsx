@@ -1,20 +1,11 @@
-import { useState, useEffect } from 'react';
-import {
-  TextField,
-  FormControlLabel,
-  Checkbox,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-} from '@mui/material';
+import { useState, useEffect, useMemo } from 'react';
 import type {
   Subscription,
-  Period,
   SubscriptionFormData,
+  FieldDefinition,
 } from '../../../types';
 import { PERIOD_OPTIONS } from '../../constants';
-import { CurrencyField, TagsAutocomplete } from '../forms';
+import { CustomForm } from '../forms';
 import FormDialog from './FormDialog';
 
 const emptyForm: SubscriptionFormData = {
@@ -62,7 +53,54 @@ export default function SubscriptionDialog({
     }
   }, [open, initial]);
 
-  const handleChange = (field: keyof SubscriptionFormData, value: unknown) => {
+  const fields: FieldDefinition[] = useMemo(
+    () => [
+      {
+        name: 'serviceName',
+        type: 'text' as const,
+        label: 'Service Name',
+        required: true,
+      },
+      {
+        name: 'dueDate',
+        type: 'date' as const,
+        label: 'Due Date',
+        required: true,
+        InputLabelProps: { shrink: true },
+      },
+      {
+        name: 'amount',
+        type: 'currency' as const,
+        label: 'Amount',
+      },
+      {
+        name: 'period',
+        type: 'select' as const,
+        label: 'Period',
+        options: PERIOD_OPTIONS,
+      },
+      {
+        name: 'tags',
+        type: 'tags' as const,
+        label: 'Tags',
+        options: allTags,
+      },
+      {
+        name: 'note',
+        type: 'textarea' as const,
+        label: 'Note',
+        rows: 2,
+      },
+      {
+        name: 'active',
+        type: 'checkbox' as const,
+        label: 'Active',
+      },
+    ],
+    [allTags],
+  );
+
+  const handleChange = (field: string, value: unknown) => {
     setForm((p) => ({ ...p, [field]: value }));
   };
 
@@ -83,67 +121,7 @@ export default function SubscriptionDialog({
       submitLabel={initial ? 'Save' : 'Add'}
       submitDisabled={!isValid}
     >
-      <TextField
-        label="Service Name"
-        required
-        value={form.serviceName}
-        onChange={(e) => handleChange('serviceName', e.target.value)}
-      />
-      <TextField
-        label="Due Date"
-        type="date"
-        required
-        value={form.dueDate}
-        onChange={(e) => handleChange('dueDate', e.target.value)}
-        InputLabelProps={{ shrink: true }}
-      />
-      <CurrencyField
-        label="Amount"
-        value={form.amount}
-        onChange={(e) => handleChange('amount', e.target.value)}
-      />
-      <FormControl fullWidth>
-        <InputLabel>Period</InputLabel>
-        <Select
-          value={form.period}
-          label="Period"
-          onChange={(e) => handleChange('period', e.target.value as Period)}
-        >
-          {PERIOD_OPTIONS.map((p) => (
-            <MenuItem key={p} value={p}>
-              {p}
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
-      <TagsAutocomplete
-        options={allTags}
-        value={form.tags}
-        onChange={(_, v) =>
-          handleChange(
-            'tags',
-            v
-              .map((x) => (typeof x === 'string' ? x.trim() : ''))
-              .filter(Boolean),
-          )
-        }
-      />
-      <TextField
-        label="Note"
-        value={form.note}
-        onChange={(e) => handleChange('note', e.target.value)}
-        multiline
-        rows={2}
-      />
-      <FormControlLabel
-        control={
-          <Checkbox
-            checked={form.active}
-            onChange={(e) => handleChange('active', e.target.checked)}
-          />
-        }
-        label="Active"
-      />
+      <CustomForm fields={fields} values={form as any} onChange={handleChange} />
     </FormDialog>
   );
 }
