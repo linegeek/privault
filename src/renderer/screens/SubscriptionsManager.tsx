@@ -79,7 +79,7 @@ export default function SubscriptionsManager() {
 
   // Filters
   const [filterServiceName, setFilterServiceName] = useState<string>('');
-  const [filterExpiry, setFilterExpiry] = useState<ExpiryFilter>('all');
+  const [filterExpiry, setFilterExpiry] = useState<ExpiryFilter>('expires_in_week');
   const [filterActive, setFilterActive] = useState(true);
   const [filterTags, setFilterTags] = useState<string[]>([]);
   const [filterNote, setFilterNote] = useState('');
