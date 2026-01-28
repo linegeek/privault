@@ -29,10 +29,14 @@ export default function TagsAutocomplete({
       size={size}
       {...props}
       renderInput={(params) => <TextField {...params} label={label} />}
-      renderTags={(value, getTagProps) =>
-        value.map((option, index) => (
-          <Chip label={option} {...getTagProps({ index })} size="small" />
-        ))
+      renderValue={(value, getTagProps) =>
+        value.map((option, index) => {
+          // Key cannot be spread from React 18+
+          const { key: chipKey, ...tagProps } = getTagProps({ index });
+          return (
+            <Chip key={chipKey} label={option} {...tagProps} size="small" />
+          );
+        })
       }
     />
   );
