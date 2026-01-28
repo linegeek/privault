@@ -105,7 +105,7 @@ export default function CustomTable<T = unknown>({
                 sx={{
                   color: 'rgba(255,255,255,0.9)',
                   backgroundColor: 'rgba(0,0,0,0.8)',
-                  width: 100,
+                  width: 150,
                 }}
               >
                 Actions

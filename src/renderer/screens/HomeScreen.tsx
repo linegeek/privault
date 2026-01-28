@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { Box, Typography, IconButton } from '@mui/material';
 import {
+  VpnKey as VpnKeyIcon,
   Subscriptions as SubscriptionsIcon,
   Logout as LogoutIcon,
 } from '@mui/icons-material';
@@ -8,6 +9,13 @@ import { ScreenLayout, ModuleCard } from '../components';
 import { useAuth } from '../contexts';
 
 const MODULES = [
+  {
+    id: 'credentials',
+    title: 'Credentials Manager',
+    description: 'Securely store and manage your passwords and login credentials.',
+    path: '/credentials',
+    icon: VpnKeyIcon,
+  },
   {
     id: 'subscriptions',
     title: 'Subscriptions Manager',

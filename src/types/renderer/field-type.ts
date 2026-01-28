@@ -6,5 +6,7 @@ export type FieldType =
   | 'checkbox'
   | 'tags'
   | 'currency'
-  | 'textarea';
+  | 'textarea'
+  | 'password'
+  | 'email';
 

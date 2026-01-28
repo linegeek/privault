@@ -4,6 +4,7 @@ export * from './dialogs';
 export * from './forms';
 export * from './layout';
 export * from './menus';
+export * from './panels';
 export * from './routing';
 export * from './tables';
 export * from './typography';

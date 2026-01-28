@@ -1,3 +1,4 @@
+export * from './credential-form-data';
 export * from './subscription-form-data';
 export * from './subscription';
 export * from './field-type';

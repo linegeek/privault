@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import { ReactNode, useState } from 'react';
 import {
   TextField,
   FormControl,
@@ -7,7 +7,10 @@ import {
   MenuItem,
   FormControlLabel,
   Checkbox,
+  IconButton,
+  InputAdornment,
 } from '@mui/material';
+import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { FieldDefinition } from '../../../types';
 import CurrencyField from './CurrencyField';
 import TagsAutocomplete from './TagsAutocomplete';
@@ -23,6 +26,15 @@ export default function CustomForm({
   values,
   onChange,
 }: CustomFormProps) {
+  const [showPasswordFields, setShowPasswordFields] = useState<Record<string, boolean>>({});
+
+  const togglePasswordVisibility = (fieldName: string) => {
+    setShowPasswordFields((prev) => ({
+      ...prev,
+      [fieldName]: !prev[fieldName],
+    }));
+  };
+
   const renderField = (field: FieldDefinition): ReactNode => {
     const { name, type, label, required, options, rows, currency, ...otherProps } = field;
     const value = values[name];
@@ -144,6 +156,46 @@ export default function CustomForm({
             onChange={(e) => onChange(name, e.target.value)}
             multiline
             rows={rows || 2}
+            fullWidth
+            {...otherProps}
+          />
+        );
+
+      case 'email':
+        return (
+          <TextField
+            key={name}
+            label={label}
+            type="email"
+            required={required}
+            value={(value as string) || ''}
+            onChange={(e) => onChange(name, e.target.value)}
+            fullWidth
+            {...otherProps}
+          />
+        );
+
+      case 'password':
+        return (
+          <TextField
+            key={name}
+            label={label}
+            type={showPasswordFields[name] ? 'text' : 'password'}
+            required={required}
+            value={(value as string) || ''}
+            onChange={(e) => onChange(name, e.target.value)}
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton
+                    onClick={() => togglePasswordVisibility(name)}
+                    edge="end"
+                  >
+                    {showPasswordFields[name] ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
             fullWidth
             {...otherProps}
           />

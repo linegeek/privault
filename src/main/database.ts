@@ -22,9 +22,25 @@ function initializeDatabase() {
     )
   `);
 
+  // Create credentials table
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS credentials (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      content TEXT NOT NULL,
+      tags TEXT,
+      created_at INTEGER NOT NULL,
+      updated_at INTEGER NOT NULL
+    )
+  `);
+
   // Create indexes
   db.exec(`
     CREATE INDEX IF NOT EXISTS idx_subscriptions_user_id ON subscriptions(user_id);
+  `);
+
+  db.exec(`
+    CREATE INDEX IF NOT EXISTS idx_credentials_user_id ON credentials(user_id);
   `);
 }
 

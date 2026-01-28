@@ -8,6 +8,7 @@ import { ThemeProvider, createTheme, CssBaseline } from '@mui/material';
 import { AuthProvider } from './contexts/AuthContext';
 import LoginScreen from './screens/LoginScreen';
 import HomeScreen from './screens/HomeScreen';
+import CredentialsManager from './screens/CredentialsManager';
 import SubscriptionsManager from './screens/SubscriptionsManager';
 import ProtectedRoute from './components/routing/ProtectedRoute';
 import './App.css';
@@ -33,6 +34,14 @@ export default function App() {
               element={
                 <ProtectedRoute>
                   <HomeScreen />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/credentials"
+              element={
+                <ProtectedRoute>
+                  <CredentialsManager />
                 </ProtectedRoute>
               }
             />
