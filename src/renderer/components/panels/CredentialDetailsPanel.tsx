@@ -28,6 +28,7 @@ export default function CredentialDetailsPanel({
 }: CredentialDetailsPanelProps) {
   const [showEmail, setShowEmail] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [showNote, setShowNote] = useState(false);
 
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -132,6 +133,40 @@ export default function CredentialDetailsPanel({
           <Box>
             <Typography
               variant="caption"
+              sx={{ color: 'rgba(255,255,255,0.6)', mb: 0.5 }}
+            >
+              Note
+            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Typography sx={{ color: 'rgba(255,255,255,0.9)', whiteSpace: 'pre-wrap', flex: 1 }}>
+                {showNote ? (credential.note || 'No note') : '•'.repeat(20)}
+              </Typography>
+              <IconButton
+                size="small"
+                onClick={() => setShowNote(!showNote)}
+                sx={{ color: 'rgba(255,255,255,0.7)' }}
+              >
+                {showNote ? <VisibilityOff /> : <Visibility />}
+              </IconButton>
+              {credential.note && (
+                <IconButton
+                  size="small"
+                  onClick={() => handleCopy(credential.note)}
+                  sx={{ color: 'rgba(255,255,255,0.7)' }}
+                >
+                  <ContentCopyIcon />
+                </IconButton>
+              )}
+            </Box>
+          </Box>
+
+          
+
+          <Divider sx={{ borderColor: 'rgba(255,255,255,0.1)' }} />
+
+          <Box>
+            <Typography
+              variant="caption"
               sx={{ color: 'rgba(255,255,255,0.6)', mb: 1 }}
             >
               Tags
@@ -150,20 +185,6 @@ export default function CredentialDetailsPanel({
                 </Typography>
               )}
             </Box>
-          </Box>
-
-          <Divider sx={{ borderColor: 'rgba(255,255,255,0.1)' }} />
-
-          <Box>
-            <Typography
-              variant="caption"
-              sx={{ color: 'rgba(255,255,255,0.6)', mb: 0.5 }}
-            >
-              Note
-            </Typography>
-            <Typography sx={{ color: 'rgba(255,255,255,0.9)', whiteSpace: 'pre-wrap' }}>
-              {credential.note || 'No note'}
-            </Typography>
           </Box>
         </Box>
       </Box>
