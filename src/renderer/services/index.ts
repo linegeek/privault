@@ -1,1 +1,1 @@
-export * from './subscriptionService';
+export * from './subscription.service';

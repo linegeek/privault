@@ -1,5 +1,4 @@
-import { ColumnVisibility, Subscription } from '../../types';
-import { DEFAULT_COLUMN_VISIBILITY } from '../constants';
+import { Subscription } from '../../types';
 
 export async function getAllSubscriptions(): Promise<Subscription[]> {
   try {
@@ -53,27 +52,4 @@ export async function deleteSubscription(id: string): Promise<boolean> {
     console.error('Error deleting subscription:', error);
     return false;
   }
-}
-
-export async function getColumnVisibility(): Promise<ColumnVisibility> {
-  const savedVisibility = await localStorage.getItem('columns');
-  const visibility = { ...DEFAULT_COLUMN_VISIBILITY };
-
-  if (savedVisibility) {
-    const columns = savedVisibility.split(',');
-    Object.keys(DEFAULT_COLUMN_VISIBILITY).forEach((column) => {
-      visibility[column] = columns.includes(column);
-    });
-  }
-
-  return visibility;
-}
-
-export async function saveColumnVisibility(
-  visibility: ColumnVisibility,
-): Promise<void> {
-  const columnsToSave = Object.keys(visibility)
-    .filter((column) => visibility[column])
-    .join(',');
-  await localStorage.setItem('columns', columnsToSave);
 }

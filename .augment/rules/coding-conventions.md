@@ -6,7 +6,8 @@ type: 'manual'
 
 ## Naming
 
-- All files except component files should be named with kebab-case. But all component files should be same as the component name.
+- Component and custom hook file names should be same as the component name.
+- All files except component and custom hook files should be named with kebab-case. 
 - All component names should be PascalCase.
 - All interface names should be PascalCase.
 - All function names should be camelCase.

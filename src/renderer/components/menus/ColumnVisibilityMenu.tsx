@@ -45,7 +45,7 @@ export default function ColumnVisibilityMenu({
             }}
           >
             <ListItemIcon>
-              <Checkbox checked={visibility[key] ?? true} disableRipple />
+              <Checkbox checked={visibility[key]} disableRipple />
             </ListItemIcon>
             <ListItemText primary={label} />
           </MenuItem>

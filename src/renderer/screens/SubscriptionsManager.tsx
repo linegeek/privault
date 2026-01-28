@@ -1,10 +1,5 @@
-import { useState, useMemo, useCallback, useEffect } from 'react';
-import {
-  Box,
-  Chip,
-  Badge,
-  IconButton,
-} from '@mui/material';
+import { useState, useMemo, useEffect } from 'react';
+import { Box, Chip, Badge, IconButton } from '@mui/material';
 import {
   Add as AddIcon,
   FilterList as FilterListIcon,
@@ -14,8 +9,6 @@ import {
   createSubscription,
   updateSubscription,
   deleteSubscription,
-  getColumnVisibility,
-  saveColumnVisibility,
 } from '../services';
 import {
   ScreenLayout,
@@ -33,37 +26,24 @@ import {
   containsIgnoreCase,
 } from '../utils';
 import {
-  ColumnVisibility,
   ExpiryFilter,
   Subscription,
   SubscriptionFormData,
   ColumnDefinition,
 } from '../../types';
-
-const COLUMN_LABELS: Record<keyof ColumnVisibility, string> = {
-  no: 'No',
-  serviceName: 'Service Name',
-  dueDate: 'Due Date',
-  amount: 'Amount',
-  period: 'Period',
-  tags: 'Tags',
-  note: 'Note',
-  active: 'Active',
-};
+import { useColumnVisibility } from '../hooks';
+import {
+  DEFAULT_VISIBILE_SUBSCRIPTION_COLUMNS,
+  SUBSCRIPTION_COLUMN_LABELS,
+  SUBSCRIPTION_COLUMN_VISIBILITY_STORAGE_KEY,
+} from '../constants';
 
 export default function SubscriptionsManager() {
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
-  const [columnVisibility, setColumnVisibilityState] =
-    useState<ColumnVisibility>({
-      no: true,
-      serviceName: true,
-      dueDate: true,
-      amount: true,
-      period: true,
-      tags: true,
-      note: true,
-      active: true,
-    });
+  const { columnVisibility, toggleColumn } = useColumnVisibility(
+    SUBSCRIPTION_COLUMN_VISIBILITY_STORAGE_KEY,
+    DEFAULT_VISIBILE_SUBSCRIPTION_COLUMNS,
+  );
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Subscription | null>(null);
   const [loading, setLoading] = useState(true);
@@ -71,7 +51,8 @@ export default function SubscriptionsManager() {
 
   // Filters
   const [filterServiceName, setFilterServiceName] = useState<string>('');
-  const [filterExpiry, setFilterExpiry] = useState<ExpiryFilter>('expires_in_week');
+  const [filterExpiry, setFilterExpiry] =
+    useState<ExpiryFilter>('expires_in_week');
   const [filterActive, setFilterActive] = useState(true);
   const [filterTags, setFilterTags] = useState<string[]>([]);
   const [filterNote, setFilterNote] = useState('');
@@ -84,23 +65,14 @@ export default function SubscriptionsManager() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [subs, visibility] = await Promise.all([
-        getAllSubscriptions(),
-        getColumnVisibility(),
-      ]);
-      setSubscriptions(subs);
-      setColumnVisibilityState(visibility);
+      const subscriptions = await getAllSubscriptions();
+      setSubscriptions(subscriptions);
     } catch {
       // Error handled silently - could add user notification here
     } finally {
       setLoading(false);
     }
   };
-
-  const setColumnVisibility = useCallback(async (v: ColumnVisibility) => {
-    setColumnVisibilityState(v);
-    await saveColumnVisibility(v);
-  }, []);
 
   const allTags = useMemo(() => {
     const set = new Set<string>();
@@ -208,21 +180,13 @@ export default function SubscriptionsManager() {
     }
   };
 
-  const toggleColumn = async (key: string) => {
-    const next = {
-      ...columnVisibility,
-      [key]: !columnVisibility[key as keyof ColumnVisibility],
-    };
-    await setColumnVisibility(next);
-  };
-
   const columns: ColumnDefinition<Subscription>[] = useMemo(
     () => [
       {
         key: 'no',
         label: 'No',
         visible: columnVisibility.no,
-        render: (_value, _row, index) => index !== undefined ? index + 1 : '',
+        render: (_value, _row, index) => (index !== undefined ? index + 1 : ''),
       },
       {
         key: 'serviceName',
@@ -296,7 +260,7 @@ export default function SubscriptionsManager() {
           }}
         >
           <ColumnVisibilityMenu
-            columns={COLUMN_LABELS}
+            columns={SUBSCRIPTION_COLUMN_LABELS}
             visibility={columnVisibility}
             onToggle={toggleColumn}
           />
