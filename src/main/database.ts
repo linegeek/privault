@@ -1,19 +1,11 @@
 import Database from 'better-sqlite3';
 import path from 'path';
 import { app } from 'electron';
+import log from 'electron-log';
+import { isDev } from './utils';
 
-const DB_NAME = 'privault.db';
+const DB_NAME = isDev() ? 'privault-dev.db' : 'privault.db';
 let db: Database.Database | null = null;
-
-export function getDatabase(): Database.Database {
-  if (!db) {
-    const dbPath = path.join(app.getPath('userData'), DB_NAME);
-    console.log('DB Path', dbPath)
-    db = new Database(dbPath);
-    initializeDatabase();
-  }
-  return db;
-}
 
 function initializeDatabase() {
   if (!db) return;
@@ -34,6 +26,16 @@ function initializeDatabase() {
   db.exec(`
     CREATE INDEX IF NOT EXISTS idx_subscriptions_user_id ON subscriptions(user_id);
   `);
+}
+
+export function getDatabase(): Database.Database {
+  if (!db) {
+    const dbPath = path.join(app.getPath('userData'), DB_NAME);
+    log.info('Database path:', dbPath);
+    db = new Database(dbPath);
+    initializeDatabase();
+  }
+  return db;
 }
 
 export function closeDatabase() {

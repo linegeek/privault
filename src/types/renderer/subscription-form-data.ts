@@ -1,4 +1,4 @@
-import { Period } from "../common/subscription";
+import { Period } from '../common/subscription';
 
 export interface SubscriptionFormData {
   serviceName: string;

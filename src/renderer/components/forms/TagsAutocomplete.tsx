@@ -1,4 +1,9 @@
-import { Autocomplete, TextField, Chip, AutocompleteProps } from '@mui/material';
+import {
+  Autocomplete,
+  TextField,
+  Chip,
+  AutocompleteProps,
+} from '@mui/material';
 
 interface TagsAutocompleteProps
   extends Omit<

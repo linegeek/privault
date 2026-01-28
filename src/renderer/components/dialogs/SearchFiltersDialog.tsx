@@ -15,7 +15,7 @@ import {
 } from '@mui/material';
 import { Close as CloseIcon } from '@mui/icons-material';
 import { ExpiryFilter } from '../../../types';
-import { TagsAutocomplete } from '../index';
+import { TagsAutocomplete } from '../forms';
 
 interface SearchFiltersDialogProps {
   open: boolean;
@@ -50,7 +50,13 @@ export default function SearchFiltersDialog({
 }: SearchFiltersDialogProps) {
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <DialogTitle
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        }}
+      >
         Search Filters
         <IconButton
           onClick={onClose}
@@ -110,4 +116,3 @@ export default function SearchFiltersDialog({
     </Dialog>
   );
 }
-

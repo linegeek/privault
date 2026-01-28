@@ -6,7 +6,11 @@ interface GradientButtonProps extends ButtonProps {
   sx?: SxProps<Theme>;
 }
 
-export default function GradientButton({ children, sx, ...props }: GradientButtonProps) {
+export default function GradientButton({
+  children,
+  sx,
+  ...props
+}: GradientButtonProps) {
   return (
     <Button
       variant="contained"

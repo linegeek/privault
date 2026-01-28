@@ -1,2 +1,2 @@
-export * from './columnVisibility';
+export * from './column-visibility';
 export * from './subscription';

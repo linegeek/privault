@@ -9,29 +9,22 @@
  * `./src/main.js` using webpack. This gives us some performance wins.
  */
 import path from 'path';
-import { app, BrowserWindow, shell, ipcMain } from 'electron';
+import { app, BrowserWindow, shell } from 'electron';
 import MenuBuilder from './menu';
-import { resolveHtmlPath } from './util';
-import './ipc-handlers';
+import { isDebug, isMac, isProd, resolveHtmlPath } from './utils';
+import { setupIpcHandlers } from './ipc-handlers';
 import { closeDatabase } from './database';
 
 let mainWindow: BrowserWindow | null = null;
 
-ipcMain.on('ipc-example', async (event, arg) => {
-  const msgTemplate = (pingPong: string) => `IPC test: ${pingPong}`;
-  console.log(msgTemplate(arg));
-  event.reply('ipc-example', msgTemplate('pong'));
-});
+setupIpcHandlers();
 
-if (process.env.NODE_ENV === 'production') {
+if (isProd()) {
   const sourceMapSupport = require('source-map-support');
   sourceMapSupport.install();
 }
 
-const isDebug =
-  process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true';
-
-if (isDebug) {
+if (isDebug()) {
   require('electron-debug').default();
 }
 
@@ -49,7 +42,7 @@ const installExtensions = async () => {
 };
 
 const createWindow = async () => {
-  if (isDebug) {
+  if (isDebug()) {
     await installExtensions();
   }
 
@@ -108,7 +101,7 @@ const createWindow = async () => {
 app.on('window-all-closed', () => {
   // Respect the OSX convention of having the application in memory even
   // after all windows have been closed
-  if (process.platform !== 'darwin') {
+  if (isMac()) {
     closeDatabase();
     app.quit();
   }

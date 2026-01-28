@@ -1,4 +1,10 @@
-import { Card, CardContent, CardActionArea, Box, Typography } from '@mui/material';
+import {
+  Card,
+  CardContent,
+  CardActionArea,
+  Box,
+  Typography,
+} from '@mui/material';
 import { SvgIconComponent } from '@mui/icons-material';
 
 interface ModuleCardProps {
@@ -8,7 +14,12 @@ interface ModuleCardProps {
   onClick: () => void;
 }
 
-export default function ModuleCard({ title, description, icon: Icon, onClick }: ModuleCardProps) {
+export default function ModuleCard({
+  title,
+  description,
+  icon: Icon,
+  onClick,
+}: ModuleCardProps) {
   return (
     <Card
       sx={{

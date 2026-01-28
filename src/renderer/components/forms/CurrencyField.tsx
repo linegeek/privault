@@ -12,9 +12,12 @@ export default function CurrencyField({
     <TextField
       type="number"
       {...props}
-      InputProps={{
-        ...props.InputProps,
-        startAdornment: <InputAdornment position="start">{currency}</InputAdornment>,
+      slotProps={{
+        input: {
+          startAdornment: (
+            <InputAdornment position="start">{currency}</InputAdornment>
+          ),
+        },
       }}
     />
   );

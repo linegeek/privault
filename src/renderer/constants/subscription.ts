@@ -1,4 +1,4 @@
-import { Period } from "../../types";
+import { Period } from '../../types';
 
 export const PERIOD_OPTIONS: Period[] = [
   '1 week',

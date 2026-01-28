@@ -1,11 +1,8 @@
-import { requireAuth } from '../services/auth';
-import { getDatabase } from '../database';
-import { DBRecord } from '../../types/main/db-record';
-import { encryptSubscription, toSubscription } from '../services/subscriptions';
 import { IpcMainInvokeEvent } from 'electron';
-import { Subscription } from '../../types/common/subscription';
-import { encryptData, generateId } from '../utils/crypto';
-import { DBSearchFilter } from '../../types/common/searchFilter';
+import { getDatabase } from '../database';
+import { DBRecord, Subscription, DBSearchFilter } from '../../types';
+import { requireAuth, encryptSubscription, toSubscription } from '../services';
+import { encryptData, generateId } from '../utils';
 
 export const handleGetSubscriptions = async (
   _event: IpcMainInvokeEvent,
@@ -15,11 +12,13 @@ export const handleGetSubscriptions = async (
   const db = getDatabase();
 
   const whereConditions = ['user_id = ?'];
-  if (filter?.tags) {
+  const params: unknown[] = [userId];
+
+  if (filter?.tags && filter.tags.length > 0) {
     filter.tags.forEach((tag) => {
       const encryptedTag = encryptData(tag, password);
-
-      whereConditions.push(`tags LIKE '%${encryptedTag}%'`);
+      whereConditions.push('tags LIKE ?');
+      params.push(`%${encryptedTag}%`);
     });
   }
 
@@ -27,7 +26,7 @@ export const handleGetSubscriptions = async (
     .prepare(
       `SELECT * FROM subscriptions WHERE ${whereConditions.join(' AND ')} ORDER BY created_at DESC`,
     )
-    .all(userId) as DBRecord[];
+    .all(...params) as DBRecord[];
 
   return rows.map((row) => toSubscription(row, password));
 };

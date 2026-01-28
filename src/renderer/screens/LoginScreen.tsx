@@ -33,9 +33,9 @@ export default function LoginScreen() {
       } else {
         setError('Invalid password. Please try again.');
       }
-    } catch (err) {
+    } catch {
       setError('An error occurred during login. Please try again.');
-      console.error('Login error:', err);
+      // Error already shown to user via setError
     } finally {
       setLoading(false);
     }

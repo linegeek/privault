@@ -1,5 +1,12 @@
 import { useState } from 'react';
-import { IconButton, Menu, MenuItem, ListItemIcon, ListItemText, Checkbox } from '@mui/material';
+import {
+  IconButton,
+  Menu,
+  MenuItem,
+  ListItemIcon,
+  ListItemText,
+  Checkbox,
+} from '@mui/material';
 import { ViewColumn as ViewColumnIcon } from '@mui/icons-material';
 
 interface ColumnVisibilityMenuProps {

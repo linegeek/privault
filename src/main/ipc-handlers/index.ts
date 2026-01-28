@@ -7,13 +7,15 @@ import {
   handleUpdateSubscription,
 } from './subscriptions';
 
-// Auth
-ipcMain.handle('auth:login', handleLogin);
-ipcMain.handle('auth:logout', handleLogout);
-ipcMain.handle('auth:getUserId', handleGetUserId);
+export function setupIpcHandlers() {
+  // Auth
+  ipcMain.handle('auth:login', handleLogin);
+  ipcMain.handle('auth:logout', handleLogout);
+  ipcMain.handle('auth:getUserId', handleGetUserId);
 
-// Subscriptions
-ipcMain.handle('subscriptions:create', handleCreateSubscription);
-ipcMain.handle('subscriptions:get', handleGetSubscriptions);
-ipcMain.handle('subscriptions:update', handleUpdateSubscription);
-ipcMain.handle('subscriptions:delete', handleDeleteSubscription);
+  // Subscriptions
+  ipcMain.handle('subscriptions:create', handleCreateSubscription);
+  ipcMain.handle('subscriptions:get', handleGetSubscriptions);
+  ipcMain.handle('subscriptions:update', handleUpdateSubscription);
+  ipcMain.handle('subscriptions:delete', handleDeleteSubscription);
+}

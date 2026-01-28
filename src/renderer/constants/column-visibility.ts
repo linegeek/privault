@@ -1,4 +1,4 @@
-import type { ColumnVisibility } from '../../types/common/columnVisibility';
+import type { ColumnVisibility } from '../../types/common/column-visibility';
 
 export const DEFAULT_COLUMN_VISIBILITY: ColumnVisibility = {
   no: true,

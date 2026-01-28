@@ -10,7 +10,12 @@ interface PageHeaderProps {
   actions?: ReactNode;
 }
 
-export default function PageHeader({ title, onBack, backPath, actions }: PageHeaderProps) {
+export default function PageHeader({
+  title,
+  onBack,
+  backPath,
+  actions,
+}: PageHeaderProps) {
   const navigate = useNavigate();
 
   const handleBack = () => {
@@ -28,7 +33,10 @@ export default function PageHeader({ title, onBack, backPath, actions }: PageHea
       <IconButton onClick={handleBack} sx={{ color: 'rgba(255,255,255,0.8)' }}>
         <ArrowBackIcon />
       </IconButton>
-      <Typography variant="h5" sx={{ color: 'rgba(255,255,255,0.95)', fontWeight: 600, flex: 1 }}>
+      <Typography
+        variant="h5"
+        sx={{ color: 'rgba(255,255,255,0.95)', fontWeight: 600, flex: 1 }}
+      >
         {title}
       </Typography>
       {actions && <Box>{actions}</Box>}

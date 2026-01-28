@@ -1,3 +1,3 @@
-export * from './columnVisibility';
-export * from './searchFilter';
+export * from './column-visibility';
+export * from './search-filter';
 export * from './subscription';

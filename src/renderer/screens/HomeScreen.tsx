@@ -1,8 +1,11 @@
 import { useNavigate } from 'react-router-dom';
 import { Box, Typography, IconButton } from '@mui/material';
-import { Subscriptions as SubscriptionsIcon, Logout as LogoutIcon } from '@mui/icons-material';
+import {
+  Subscriptions as SubscriptionsIcon,
+  Logout as LogoutIcon,
+} from '@mui/icons-material';
 import { ScreenLayout, ModuleCard } from '../components';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../contexts';
 
 const MODULES = [
   {
@@ -26,7 +29,14 @@ export default function HomeScreen() {
   return (
     <ScreenLayout>
       <Box sx={{ p: 4 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            mb: 4,
+          }}
+        >
           <Typography
             variant="h4"
             sx={{
@@ -37,7 +47,11 @@ export default function HomeScreen() {
           >
             Dashboard
           </Typography>
-          <IconButton onClick={handleLogout} sx={{ color: 'rgba(255,255,255,0.8)' }} title="Logout">
+          <IconButton
+            onClick={handleLogout}
+            sx={{ color: 'rgba(255,255,255,0.8)' }}
+            title="Logout"
+          >
             <LogoutIcon />
           </IconButton>
         </Box>

@@ -1,4 +1,10 @@
-import { createContext, useContext, useState, ReactNode, useCallback } from 'react';
+import {
+  createContext,
+  useContext,
+  useState,
+  ReactNode,
+  useCallback,
+} from 'react';
 import { useNavigate } from 'react-router-dom';
 
 interface AuthContextType {
@@ -16,14 +22,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = useCallback(async (password: string): Promise<boolean> => {
     try {
-      const result = await window.electron.ipcRenderer.invoke('auth:login', password);
+      const result = await window.electron.ipcRenderer.invoke(
+        'auth:login',
+        password,
+      );
       if (result?.success) {
         setUserId(result.userId);
         return true;
       }
       return false;
-    } catch (error) {
-      console.error('Login error:', error);
+    } catch {
+      // Error handled silently - could add user notification here
       return false;
     }
   }, []);
@@ -33,8 +42,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await window.electron.ipcRenderer.invoke('auth:logout');
       setUserId(null);
       navigate('/');
-    } catch (error) {
-      console.error('Logout error:', error);
+    } catch {
+      // Error handled silently - could add user notification here
     }
   }, [navigate]);
 

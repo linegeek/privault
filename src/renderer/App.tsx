@@ -1,4 +1,9 @@
-import { MemoryRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import {
+  MemoryRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from 'react-router-dom';
 import { ThemeProvider, createTheme, CssBaseline } from '@mui/material';
 import { AuthProvider } from './contexts/AuthContext';
 import LoginScreen from './screens/LoginScreen';

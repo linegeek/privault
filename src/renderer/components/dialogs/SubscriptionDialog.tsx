@@ -8,11 +8,14 @@ import {
   Select,
   MenuItem,
 } from '@mui/material';
-import type { Subscription, Period } from '../../../types/common/subscription';
-import { PERIOD_OPTIONS } from '../../constants/subscription';
-import { CurrencyField, TagsAutocomplete } from '../../components';
+import type {
+  Subscription,
+  Period,
+  SubscriptionFormData,
+} from '../../../types';
+import { PERIOD_OPTIONS } from '../../constants';
+import { CurrencyField, TagsAutocomplete } from '../forms';
 import FormDialog from './FormDialog';
-import { SubscriptionFormData } from '../../../types/renderer/subscription-form-data';
 
 const emptyForm: SubscriptionFormData = {
   serviceName: '',

@@ -16,7 +16,7 @@ export const toSubscription = (record: DBRecord, password: string) => {
       dueDate: jsonObj.dueDate,
       amount: jsonObj.amount,
       period: jsonObj.period,
-      tags: tags,
+      tags,
       note: jsonObj.note,
       active: jsonObj.active,
     } as Subscription;

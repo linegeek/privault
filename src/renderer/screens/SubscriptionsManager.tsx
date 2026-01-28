@@ -33,12 +33,20 @@ import {
   GradientButton,
   ColumnVisibilityMenu,
   SubscriptionDialog,
-  ColumnVisibility,
   SearchFiltersDialog,
 } from '../components';
-import { formatCurrency, isExpired, expiresInWeek } from '../utils';
-import { ExpiryFilter, Subscription, SubscriptionFormData } from '../../types';
-import { containsIgnoreCase } from '../utils/string';
+import {
+  formatCurrency,
+  isExpired,
+  expiresInWeek,
+  containsIgnoreCase,
+} from '../utils';
+import {
+  ColumnVisibility,
+  ExpiryFilter,
+  Subscription,
+  SubscriptionFormData,
+} from '../../types';
 
 const COLUMN_LABELS: Record<keyof ColumnVisibility, string> = {
   no: 'No',
@@ -90,8 +98,8 @@ export default function SubscriptionsManager() {
       ]);
       setSubscriptions(subs);
       setColumnVisibilityState(visibility);
-    } catch (error) {
-      console.error('Error loading data:', error);
+    } catch {
+      // Error handled silently - could add user notification here
     } finally {
       setLoading(false);
     }
@@ -285,46 +293,92 @@ export default function SubscriptionsManager() {
             <TableHead>
               <TableRow>
                 {columnVisibility.no && (
-                  <TableCell sx={{ color: 'rgba(255,255,255,0.9)', backgroundColor: 'rgba(0,0,0,0.8)' }}>
+                  <TableCell
+                    sx={{
+                      color: 'rgba(255,255,255,0.9)',
+                      backgroundColor: 'rgba(0,0,0,0.8)',
+                    }}
+                  >
                     No
                   </TableCell>
                 )}
                 {columnVisibility.serviceName && (
-                  <TableCell sx={{ color: 'rgba(255,255,255,0.9)', backgroundColor: 'rgba(0,0,0,0.8)' }}>
+                  <TableCell
+                    sx={{
+                      color: 'rgba(255,255,255,0.9)',
+                      backgroundColor: 'rgba(0,0,0,0.8)',
+                    }}
+                  >
                     Service Name
                   </TableCell>
                 )}
                 {columnVisibility.dueDate && (
-                  <TableCell sx={{ color: 'rgba(255,255,255,0.9)', backgroundColor: 'rgba(0,0,0,0.8)' }}>
+                  <TableCell
+                    sx={{
+                      color: 'rgba(255,255,255,0.9)',
+                      backgroundColor: 'rgba(0,0,0,0.8)',
+                    }}
+                  >
                     Due Date
                   </TableCell>
                 )}
                 {columnVisibility.amount && (
-                  <TableCell sx={{ color: 'rgba(255,255,255,0.9)', backgroundColor: 'rgba(0,0,0,0.8)' }}>
+                  <TableCell
+                    sx={{
+                      color: 'rgba(255,255,255,0.9)',
+                      backgroundColor: 'rgba(0,0,0,0.8)',
+                    }}
+                  >
                     Amount
                   </TableCell>
                 )}
                 {columnVisibility.period && (
-                  <TableCell sx={{ color: 'rgba(255,255,255,0.9)', backgroundColor: 'rgba(0,0,0,0.8)' }}>
+                  <TableCell
+                    sx={{
+                      color: 'rgba(255,255,255,0.9)',
+                      backgroundColor: 'rgba(0,0,0,0.8)',
+                    }}
+                  >
                     Period
                   </TableCell>
                 )}
                 {columnVisibility.tags && (
-                  <TableCell sx={{ color: 'rgba(255,255,255,0.9)', backgroundColor: 'rgba(0,0,0,0.8)' }}>
+                  <TableCell
+                    sx={{
+                      color: 'rgba(255,255,255,0.9)',
+                      backgroundColor: 'rgba(0,0,0,0.8)',
+                    }}
+                  >
                     Tags
                   </TableCell>
                 )}
                 {columnVisibility.note && (
-                  <TableCell sx={{ color: 'rgba(255,255,255,0.9)', backgroundColor: 'rgba(0,0,0,0.8)' }}>
+                  <TableCell
+                    sx={{
+                      color: 'rgba(255,255,255,0.9)',
+                      backgroundColor: 'rgba(0,0,0,0.8)',
+                    }}
+                  >
                     Note
                   </TableCell>
                 )}
                 {columnVisibility.active && (
-                  <TableCell sx={{ color: 'rgba(255,255,255,0.9)', backgroundColor: 'rgba(0,0,0,0.8)' }}>
+                  <TableCell
+                    sx={{
+                      color: 'rgba(255,255,255,0.9)',
+                      backgroundColor: 'rgba(0,0,0,0.8)',
+                    }}
+                  >
                     Active
                   </TableCell>
                 )}
-                <TableCell sx={{ color: 'rgba(255,255,255,0.9)', backgroundColor: 'rgba(0,0,0,0.8)', width: 100 }}>
+                <TableCell
+                  sx={{
+                    color: 'rgba(255,255,255,0.9)',
+                    backgroundColor: 'rgba(0,0,0,0.8)',
+                    width: 100,
+                  }}
+                >
                   Actions
                 </TableCell>
               </TableRow>

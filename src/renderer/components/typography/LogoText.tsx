@@ -4,7 +4,10 @@ interface LogoTextProps extends Omit<TypographyProps, 'children'> {
   text?: string;
 }
 
-export default function LogoText({ text = 'PRIVAULT', ...props }: LogoTextProps) {
+export default function LogoText({
+  text = 'PRIVAULT',
+  ...props
+}: LogoTextProps) {
   return (
     <Typography
       variant="h4"
