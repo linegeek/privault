@@ -53,14 +53,22 @@ export default function MaskedFieldWithActions({
       >
         <IconButton
           size="small"
-          onClick={onToggleVisibility}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            onToggleVisibility();
+          }}
           sx={{ color: 'rgba(255,255,255,0.9)' }}
         >
           {isVisible ? <VisibilityOff /> : <Visibility />}
         </IconButton>
         <IconButton
           size="small"
-          onClick={onCopy}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            onCopy();
+          }}
           sx={{ color: 'rgba(255,255,255,0.9)' }}
         >
           <ContentCopyIcon />

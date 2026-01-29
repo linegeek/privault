@@ -8,7 +8,6 @@ import {
 import {
   Add as AddIcon,
   FilterList as FilterListIcon,
-  Info as InfoIcon,
 } from '@mui/icons-material';
 import {
   getAllCredentials,
@@ -28,7 +27,7 @@ import {
   MaskedFieldWithActions,
 } from '../components';
 import { containsIgnoreCase } from '../utils';
-import { Credential, CredentialFormData, ColumnDefinition, RowAction } from '../../types';
+import { Credential, CredentialFormData, ColumnDefinition } from '../../types';
 import { useColumnVisibility } from '../hooks';
 import {
   DEFAULT_VISIBLE_CREDENTIAL_COLUMNS,
@@ -251,17 +250,7 @@ export default function CredentialsManager() {
     [columnVisibility, visibleUsernames, visiblePasswords],
   );
 
-  const rowActions: RowAction<Credential>[] = useMemo(
-    () => [
-      {
-        icon: InfoIcon,
-        onClick: handleShowDetails,
-        color: '#60a5fa',
-        title: 'Details',
-      },
-    ],
-    [],
-  );
+
 
   return (
     <ScreenLayout>
@@ -314,11 +303,11 @@ export default function CredentialsManager() {
           emptyMessage="No credentials found"
           onEdit={handleEdit}
           onDelete={(row) => handleDelete(row.id)}
-          rowActions={rowActions}
           getRowKey={(row) => row.id}
           rowsPerPageOptions={[10, 25, 50, 100]}
           defaultRowsPerPage={10}
           storageKey="credentials-table"
+          onRowClick={handleShowDetails}
         />
       </Box>
 

@@ -199,26 +199,14 @@ export default function CredentialDetailsPanel({
             >
               Note
             </Typography>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Typography
-                sx={{
-                  color: 'rgba(255,255,255,0.9)',
-                  whiteSpace: 'pre-wrap',
-                  flex: 1,
-                }}
-              >
-                {credential.note || 'No note'}
-              </Typography>
-              {credential.note && (
-                <IconButton
-                  size="small"
-                  onClick={() => handleCopy(credential.note)}
-                  sx={{ color: 'rgba(255,255,255,0.7)' }}
-                >
-                  <ContentCopyIcon />
-                </IconButton>
-              )}
-            </Box>
+            <Typography
+              sx={{
+                color: 'rgba(255,255,255,0.9)',
+                whiteSpace: 'pre-wrap',
+              }}
+            >
+              {credential.note || 'No note'}
+            </Typography>
           </Box>
 
           <Divider sx={{ borderColor: 'rgba(255,255,255,0.1)' }} />

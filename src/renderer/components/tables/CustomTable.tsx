@@ -27,6 +27,7 @@ interface CustomTableProps<T = unknown> {
   rowsPerPageOptions?: number[];
   defaultRowsPerPage?: number;
   storageKey?: string;
+  onRowClick?: (row: T) => void;
 }
 
 export default function CustomTable<T = unknown>({
@@ -41,6 +42,7 @@ export default function CustomTable<T = unknown>({
   rowsPerPageOptions = [10, 25, 50, 100],
   defaultRowsPerPage = 10,
   storageKey,
+  onRowClick,
 }: CustomTableProps<T>) {
   const visibleColumns = columns.filter((col) => col.visible);
   const hasActions = onEdit || onDelete || (rowActions && rowActions.length > 0);
@@ -173,7 +175,12 @@ export default function CustomTable<T = unknown>({
               const actualIndex = page * rowsPerPage + paginatedIndex;
               const rowKey = getRowKey ? getRowKey(row, actualIndex) : String(actualIndex);
               return (
-                <TableRow key={rowKey} hover>
+                <TableRow
+                  key={rowKey}
+                  hover
+                  onClick={() => onRowClick?.(row)}
+                  sx={{ cursor: onRowClick ? 'pointer' : 'default' }}
+                >
                   {visibleColumns.map((col) => {
                     const value = (row as Record<string, unknown>)[col.key];
                     const content = col.render ? col.render(value, row, actualIndex) : value;
@@ -195,7 +202,11 @@ export default function CustomTable<T = unknown>({
                           <IconButton
                             key={actionIndex}
                             size="small"
-                            onClick={() => action.onClick(row)}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              action.onClick(row);
+                            }}
                             sx={{ color: action.color || 'rgba(255,255,255,0.8)' }}
                             title={action.title}
                           >
