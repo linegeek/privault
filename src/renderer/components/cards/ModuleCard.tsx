@@ -27,6 +27,7 @@ export default function ModuleCard({
         border: '1px solid rgba(255,255,255,0.1)',
         borderRadius: 2,
         transition: 'all 0.2s',
+        height: '100%',
         '&:hover': {
           background: 'rgba(255,255,255,0.08)',
           borderColor: 'rgba(124, 58, 237, 0.5)',
@@ -35,7 +36,7 @@ export default function ModuleCard({
       }}
     >
       <CardActionArea onClick={onClick} sx={{ p: 2 }}>
-        <CardContent>
+        <CardContent sx={{ height: '100%' }}>
           <Box
             sx={{
               width: 48,
