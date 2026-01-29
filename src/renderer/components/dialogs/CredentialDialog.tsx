@@ -1,14 +1,17 @@
 import { useState, useEffect, useMemo } from 'react';
+import { Box, Button, Typography, Divider } from '@mui/material';
+import { Add as AddIcon } from '@mui/icons-material';
 import type { Credential, CredentialFormData, FieldDefinition } from '../../../types';
-import { CustomForm } from '../forms';
+import { CustomForm, CustomFieldInput } from '../forms';
 import FormDialog from './FormDialog';
 
 const emptyForm: CredentialFormData = {
   serviceName: '',
-  email: '',
+  username: '',
   password: '',
   tags: [],
   note: '',
+  customFields: [],
 };
 
 interface CredentialDialogProps {
@@ -34,10 +37,11 @@ export default function CredentialDialog({
         initial
           ? {
               serviceName: initial.serviceName,
-              email: initial.email,
+              username: initial.username,
               password: initial.password,
               tags: [...initial.tags],
               note: initial.note,
+              customFields: [...(initial.customFields || [])],
             }
           : { ...emptyForm },
       );
@@ -48,19 +52,38 @@ export default function CredentialDialog({
     setForm((p) => ({ ...p, [field]: value }));
   };
 
+  const handleAddCustomField = () => {
+    setForm((p) => ({
+      ...p,
+      customFields: [...p.customFields, { key: '', value: '' }],
+    }));
+  };
+
+  const handleCustomFieldChange = (index: number, field: { key: string; value: string }) => {
+    setForm((p) => ({
+      ...p,
+      customFields: p.customFields.map((f, i) => (i === index ? field : f)),
+    }));
+  };
+
+  const handleDeleteCustomField = (index: number) => {
+    setForm((p) => ({
+      ...p,
+      customFields: p.customFields.filter((_, i) => i !== index),
+    }));
+  };
+
   const handleSubmit = () => {
-    if (!form.serviceName.trim() || !form.email.trim() || !form.password.trim())
+    if (!form.serviceName.trim() || !form.username.trim() || !form.password.trim())
       return;
     onSave({ ...form });
     onClose();
   };
 
-  const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email);
   const isValid =
     form.serviceName.trim() &&
-    form.email.trim() &&
-    form.password.trim() &&
-    isValidEmail;
+    form.username.trim() &&
+    form.password.trim();
 
   const fields: FieldDefinition[] = useMemo(
     () => [
@@ -72,11 +95,11 @@ export default function CredentialDialog({
         error: form.serviceName !== '' && !form.serviceName.trim(),
       },
       {
-        name: 'email',
-        type: 'email' as const,
-        label: 'Email',
+        name: 'username',
+        type: 'password' as const,
+        label: 'Username',
         required: true,
-        error: form.email !== '' && (!form.email.trim() || !isValidEmail),
+        error: form.username !== '' && !form.username.trim(),
       },
       {
         name: 'password',
@@ -98,7 +121,7 @@ export default function CredentialDialog({
         rows: 3,
       },
     ],
-    [allTags, form.serviceName, form.email, form.password, isValidEmail],
+    [allTags, form.serviceName, form.username, form.password],
   );
 
   return (
@@ -111,6 +134,35 @@ export default function CredentialDialog({
       submitDisabled={!isValid}
     >
       <CustomForm fields={fields} values={form as any} onChange={handleChange} />
+
+      <Divider sx={{ my: 3, borderColor: 'rgba(255,255,255,0.1)' }} />
+
+      <Box>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+          <Typography variant="subtitle2" sx={{ color: 'rgba(255,255,255,0.9)' }}>
+            Custom Fields
+          </Typography>
+          <Button
+            size="small"
+            startIcon={<AddIcon />}
+            onClick={handleAddCustomField}
+            sx={{ textTransform: 'none' }}
+          >
+            Add Field
+          </Button>
+        </Box>
+
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          {form.customFields.map((field, index) => (
+            <CustomFieldInput
+              key={index}
+              field={field}
+              onChange={(f) => handleCustomFieldChange(index, f)}
+              onDelete={() => handleDeleteCustomField(index)}
+            />
+          ))}
+        </Box>
+      </Box>
     </FormDialog>
   );
 }

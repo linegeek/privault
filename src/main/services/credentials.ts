@@ -13,10 +13,11 @@ export const toCredential = (record: DBRecord, password: string) => {
     return {
       id: record.id,
       serviceName: jsonObj.serviceName,
-      email: jsonObj.email,
+      username: jsonObj.username,
       password: jsonObj.password,
       tags,
       note: jsonObj.note,
+      customFields: jsonObj.customFields || [],
     } as Credential;
   } catch {
     return null;
@@ -29,9 +30,10 @@ export const encryptCredential = (
 ) => {
   const jsondata = JSON.stringify({
     serviceName: credential.serviceName,
-    email: credential.email,
+    username: credential.username,
     password: credential.password,
     note: credential.note,
+    customFields: credential.customFields || [],
   });
   const tags = (credential.tags || [])
     .map((tag) => encryptData(tag, password))

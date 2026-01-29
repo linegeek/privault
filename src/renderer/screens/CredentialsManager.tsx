@@ -55,8 +55,8 @@ export default function CredentialsManager() {
   const [filterTags, setFilterTags] = useState<string[]>([]);
   const [filterNote, setFilterNote] = useState('');
 
-  // Visibility toggles for email/password in table
-  const [visibleEmails, setVisibleEmails] = useState<Set<string>>(new Set());
+  // Visibility toggles for username/password in table
+  const [visibleUsernames, setVisibleUsernames] = useState<Set<string>>(new Set());
   const [visiblePasswords, setVisiblePasswords] = useState<Set<string>>(
     new Set(),
   );
@@ -138,10 +138,11 @@ export default function CredentialsManager() {
     const credential: Credential = {
       id: editing?.id || crypto.randomUUID(),
       serviceName: data.serviceName.trim(),
-      email: data.email.trim(),
+      username: data.username.trim(),
       password: data.password.trim(),
       tags: data.tags,
       note: data.note,
+      customFields: data.customFields || [],
     };
 
     const success = editing
@@ -162,8 +163,8 @@ export default function CredentialsManager() {
     setDetailsPanelOpen(true);
   };
 
-  const toggleEmailVisibility = (id: string) => {
-    setVisibleEmails((prev) => {
+  const toggleUsernameVisibility = (id: string) => {
+    setVisibleUsernames((prev) => {
       const next = new Set(prev);
       if (next.has(id)) {
         next.delete(id);
@@ -204,15 +205,15 @@ export default function CredentialsManager() {
         visible: columnVisibility.serviceName,
       },
       {
-        key: 'email',
-        label: 'Email',
-        visible: columnVisibility.email,
+        key: 'username',
+        label: 'Username',
+        visible: columnVisibility.username,
         render: (_value, row) => (
           <MaskedFieldWithActions
-            value={row.email}
-            isVisible={visibleEmails.has(row.id)}
-            onToggleVisibility={() => toggleEmailVisibility(row.id)}
-            onCopy={() => handleCopy(row.email)}
+            value={row.username}
+            isVisible={visibleUsernames.has(row.id)}
+            onToggleVisibility={() => toggleUsernameVisibility(row.id)}
+            onCopy={() => handleCopy(row.username)}
           />
         ),
       },
@@ -247,7 +248,7 @@ export default function CredentialsManager() {
         visible: columnVisibility.note,
       },
     ],
-    [columnVisibility, visibleEmails, visiblePasswords],
+    [columnVisibility, visibleUsernames, visiblePasswords],
   );
 
   const rowActions: RowAction<Credential>[] = useMemo(
@@ -315,6 +316,9 @@ export default function CredentialsManager() {
           onDelete={(row) => handleDelete(row.id)}
           rowActions={rowActions}
           getRowKey={(row) => row.id}
+          rowsPerPageOptions={[10, 25, 50, 100]}
+          defaultRowsPerPage={10}
+          storageKey="credentials-table"
         />
       </Box>
 

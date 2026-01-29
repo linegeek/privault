@@ -288,6 +288,9 @@ export default function SubscriptionsManager() {
           onEdit={handleEdit}
           onDelete={(row) => handleDelete(row.id)}
           getRowKey={(row) => row.id}
+          rowsPerPageOptions={[10, 25, 50, 100]}
+          defaultRowsPerPage={10}
+          storageKey="subscriptions-table"
         />
 
         <SubscriptionDialog

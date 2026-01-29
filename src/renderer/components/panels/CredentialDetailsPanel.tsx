@@ -26,19 +26,33 @@ export default function CredentialDetailsPanel({
   onClose,
   credential,
 }: CredentialDetailsPanelProps) {
-  const [showEmail, setShowEmail] = useState(false);
+  const [showUsername, setShowUsername] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [showNote, setShowNote] = useState(false);
+  const [visibleCustomFields, setVisibleCustomFields] = useState<Set<number>>(
+    new Set(),
+  );
 
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text);
+  };
+
+  const toggleCustomFieldVisibility = (index: number) => {
+    setVisibleCustomFields((prev) => {
+      const next = new Set(prev);
+      if (next.has(index)) {
+        next.delete(index);
+      } else {
+        next.add(index);
+      }
+      return next;
+    });
   };
 
   if (!credential) return null;
 
   return (
     <Drawer anchor="right" open={open} onClose={onClose}>
-      <Box sx={{ width: 400, p: 3 }}>
+      <Box sx={{ width: 400, p: 2 }}>
         <Box
           sx={{
             display: 'flex',
@@ -55,7 +69,7 @@ export default function CredentialDetailsPanel({
           </IconButton>
         </Box>
 
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           <Box>
             <Typography
               variant="caption"
@@ -75,22 +89,22 @@ export default function CredentialDetailsPanel({
               variant="caption"
               sx={{ color: 'rgba(255,255,255,0.6)', mb: 0.5 }}
             >
-              Email
+              Username
             </Typography>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <Typography sx={{ color: 'rgba(255,255,255,0.9)', flex: 1 }}>
-                {showEmail ? credential.email : '•'.repeat(20)}
+                {showUsername ? credential.username : '•'.repeat(20)}
               </Typography>
               <IconButton
                 size="small"
-                onClick={() => setShowEmail(!showEmail)}
+                onClick={() => setShowUsername(!showUsername)}
                 sx={{ color: 'rgba(255,255,255,0.7)' }}
               >
-                {showEmail ? <VisibilityOff /> : <Visibility />}
+                {showUsername ? <VisibilityOff /> : <Visibility />}
               </IconButton>
               <IconButton
                 size="small"
-                onClick={() => handleCopy(credential.email)}
+                onClick={() => handleCopy(credential.username)}
                 sx={{ color: 'rgba(255,255,255,0.7)' }}
               >
                 <ContentCopyIcon />
@@ -128,6 +142,54 @@ export default function CredentialDetailsPanel({
             </Box>
           </Box>
 
+          {credential.customFields && credential.customFields.length > 0 && (
+            <>
+              {credential.customFields.map((field, index) => (
+                <Box key={index}>
+                  <Divider
+                    sx={{ borderColor: 'rgba(255,255,255,0.1)', mb: 2 }}
+                  />
+
+                  <Typography
+                    variant="caption"
+                    sx={{ color: 'rgba(255,255,255,0.5)', mb: 0.5 }}
+                  >
+                    {field.key || `Field ${index + 1}`}
+                  </Typography>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Typography
+                      sx={{ color: 'rgba(255,255,255,0.9)', flex: 1 }}
+                    >
+                      {visibleCustomFields.has(index)
+                        ? field.value
+                        : '•'.repeat(20)}
+                    </Typography>
+                    <IconButton
+                      size="small"
+                      onClick={() => toggleCustomFieldVisibility(index)}
+                      sx={{ color: 'rgba(255,255,255,0.7)' }}
+                    >
+                      {visibleCustomFields.has(index) ? (
+                        <VisibilityOff />
+                      ) : (
+                        <Visibility />
+                      )}
+                    </IconButton>
+                    {field.value && (
+                      <IconButton
+                        size="small"
+                        onClick={() => handleCopy(field.value)}
+                        sx={{ color: 'rgba(255,255,255,0.7)' }}
+                      >
+                        <ContentCopyIcon />
+                      </IconButton>
+                    )}
+                  </Box>
+                </Box>
+              ))}
+            </>
+          )}
+
           <Divider sx={{ borderColor: 'rgba(255,255,255,0.1)' }} />
 
           <Box>
@@ -138,16 +200,15 @@ export default function CredentialDetailsPanel({
               Note
             </Typography>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Typography sx={{ color: 'rgba(255,255,255,0.9)', whiteSpace: 'pre-wrap', flex: 1 }}>
-                {showNote ? (credential.note || 'No note') : '•'.repeat(20)}
-              </Typography>
-              <IconButton
-                size="small"
-                onClick={() => setShowNote(!showNote)}
-                sx={{ color: 'rgba(255,255,255,0.7)' }}
+              <Typography
+                sx={{
+                  color: 'rgba(255,255,255,0.9)',
+                  whiteSpace: 'pre-wrap',
+                  flex: 1,
+                }}
               >
-                {showNote ? <VisibilityOff /> : <Visibility />}
-              </IconButton>
+                {credential.note || 'No note'}
+              </Typography>
               {credential.note && (
                 <IconButton
                   size="small"
@@ -159,8 +220,6 @@ export default function CredentialDetailsPanel({
               )}
             </Box>
           </Box>
-
-          
 
           <Divider sx={{ borderColor: 'rgba(255,255,255,0.1)' }} />
 
@@ -191,4 +250,3 @@ export default function CredentialDetailsPanel({
     </Drawer>
   );
 }
-

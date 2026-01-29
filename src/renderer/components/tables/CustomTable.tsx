@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import { ReactNode, useState, useEffect } from 'react';
 import {
   Table,
   TableBody,
@@ -9,6 +9,8 @@ import {
   Paper,
   IconButton,
   Typography,
+  TablePagination,
+  Box,
 } from '@mui/material';
 import { Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import { ColumnDefinition, RowAction } from '../../../types';
@@ -22,6 +24,9 @@ interface CustomTableProps<T = unknown> {
   onDelete?: (row: T) => void;
   rowActions?: RowAction<T>[];
   getRowKey?: (row: T, index: number) => string;
+  rowsPerPageOptions?: number[];
+  defaultRowsPerPage?: number;
+  storageKey?: string;
 }
 
 export default function CustomTable<T = unknown>({
@@ -33,9 +38,49 @@ export default function CustomTable<T = unknown>({
   onDelete,
   rowActions,
   getRowKey,
+  rowsPerPageOptions = [10, 25, 50, 100],
+  defaultRowsPerPage = 10,
+  storageKey,
 }: CustomTableProps<T>) {
   const visibleColumns = columns.filter((col) => col.visible);
   const hasActions = onEdit || onDelete || (rowActions && rowActions.length > 0);
+
+  // Pagination state
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(() => {
+    if (storageKey) {
+      const stored = localStorage.getItem(`${storageKey}-rows-per-page`);
+      return stored ? parseInt(stored, 10) : defaultRowsPerPage;
+    }
+    return defaultRowsPerPage;
+  });
+
+  // Reset page when data changes
+  useEffect(() => {
+    setPage(0);
+  }, [data.length]);
+
+  // Persist rows per page
+  useEffect(() => {
+    if (storageKey) {
+      localStorage.setItem(`${storageKey}-rows-per-page`, String(rowsPerPage));
+    }
+  }, [rowsPerPage, storageKey]);
+
+  // Paginate data
+  const paginatedData = data.slice(
+    page * rowsPerPage,
+    page * rowsPerPage + rowsPerPage
+  );
+
+  const handleChangePage = (_event: unknown, newPage: number) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
 
   const defaultActions: RowAction<T>[] = [];
   if (onEdit) {
@@ -124,13 +169,14 @@ export default function CustomTable<T = unknown>({
               </TableCell>
             </TableRow>
           ) : (
-            data.map((row, index) => {
-              const rowKey = getRowKey ? getRowKey(row, index) : String(index);
+            paginatedData.map((row, paginatedIndex) => {
+              const actualIndex = page * rowsPerPage + paginatedIndex;
+              const rowKey = getRowKey ? getRowKey(row, actualIndex) : String(actualIndex);
               return (
                 <TableRow key={rowKey} hover>
                   {visibleColumns.map((col) => {
                     const value = (row as Record<string, unknown>)[col.key];
-                    const content = col.render ? col.render(value, row, index) : value;
+                    const content = col.render ? col.render(value, row, actualIndex) : value;
                     return (
                       <TableCell
                         key={col.key}
@@ -165,6 +211,28 @@ export default function CustomTable<T = unknown>({
           )}
         </TableBody>
       </Table>
+      <TablePagination
+        rowsPerPageOptions={rowsPerPageOptions}
+        component="div"
+        count={data.length}
+        rowsPerPage={rowsPerPage}
+        page={page}
+        onPageChange={handleChangePage}
+        onRowsPerPageChange={handleChangeRowsPerPage}
+        sx={{
+          color: 'rgba(255,255,255,0.8)',
+          borderTop: '1px solid rgba(255,255,255,0.1)',
+          '.MuiTablePagination-select': {
+            color: 'rgba(255,255,255,0.8)',
+          },
+          '.MuiTablePagination-selectIcon': {
+            color: 'rgba(255,255,255,0.8)',
+          },
+          '.MuiTablePagination-displayedRows': {
+            color: 'rgba(255,255,255,0.8)',
+          },
+        }}
+      />
     </TableContainer>
   );
 }
