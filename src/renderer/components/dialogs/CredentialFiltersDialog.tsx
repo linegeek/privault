@@ -1,14 +1,14 @@
-import { useState, useEffect } from 'react';
+import { useMemo } from 'react';
 import {
   Dialog,
   DialogTitle,
   DialogContent,
   Box,
-  TextField,
   IconButton,
 } from '@mui/material';
 import { Close as CloseIcon } from '@mui/icons-material';
-import { TagsAutocomplete } from '../forms';
+import { FieldDefinition } from '../../../types';
+import { CustomForm } from '../forms';
 
 interface CredentialFiltersDialogProps {
   open: boolean;
@@ -33,58 +33,72 @@ export default function CredentialFiltersDialog({
   setFilterNote,
   allTags,
 }: CredentialFiltersDialogProps) {
-  const [localServiceName, setLocalServiceName] = useState(filterServiceName);
-  const [localTags, setLocalTags] = useState(filterTags);
-  const [localNote, setLocalNote] = useState(filterNote);
+  const fields: FieldDefinition[] = useMemo(
+    () => [
+      {
+        name: 'filterServiceName',
+        type: 'text' as const,
+        label: 'Service Name',
+        size: 'small',
+      },
+      {
+        name: 'filterTags',
+        type: 'tags' as const,
+        label: 'Tags',
+        options: allTags,
+        size: 'small',
+      },
+      {
+        name: 'filterNote',
+        type: 'text' as const,
+        label: 'Note',
+        size: 'small',
+      },
+    ],
+    [allTags],
+  );
 
-  useEffect(() => {
-    if (open) {
-      setLocalServiceName(filterServiceName);
-      setLocalTags(filterTags);
-      setLocalNote(filterNote);
+  const values = {
+    filterServiceName,
+    filterTags,
+    filterNote,
+  };
+
+  const handleChange = (field: string, value: unknown) => {
+    switch (field) {
+      case 'filterServiceName':
+        setFilterServiceName(value as string);
+        break;
+      case 'filterTags':
+        setFilterTags(value as string[]);
+        break;
+      case 'filterNote':
+        setFilterNote(value as string);
+        break;
     }
-  }, [open, filterServiceName, filterTags, filterNote]);
-
-  const handleClose = () => {
-    setFilterServiceName(localServiceName);
-    setFilterTags(localTags);
-    setFilterNote(localNote);
-    onClose();
   };
 
   return (
-    <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
-      <DialogTitle>
+    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+      <DialogTitle
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        }}
+      >
         Search Filters
         <IconButton
-          onClick={handleClose}
-          sx={{ position: 'absolute', right: 8, top: 8 }}
+          onClick={onClose}
+          sx={{ color: 'rgba(255,255,255,0.8)' }}
+          size="small"
         >
           <CloseIcon />
         </IconButton>
       </DialogTitle>
       <DialogContent>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
-          <TextField
-            size="small"
-            label="Service Name"
-            value={localServiceName}
-            onChange={(e) => setLocalServiceName(e.target.value)}
-            fullWidth
-          />
-          <TagsAutocomplete
-            options={allTags}
-            value={localTags}
-            onChange={(_, v) => setLocalTags(v)}
-            size="small"
-          />
-          <TextField
-            size="small"
-            label="Note"
-            value={localNote}
-            onChange={(e) => setLocalNote(e.target.value)}
-            fullWidth
-          />
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1, pb: 2 }}>
+          <CustomForm fields={fields} values={values} onChange={handleChange} />
         </Box>
       </DialogContent>
     </Dialog>

@@ -35,7 +35,7 @@ export default function ModuleCard({
         },
       }}
     >
-      <CardActionArea onClick={onClick} sx={{ p: 2 }}>
+      <CardActionArea onClick={onClick} sx={{ height: '100%', p: 2 }}>
         <CardContent sx={{ height: '100%' }}>
           <Box
             sx={{
