@@ -111,8 +111,8 @@ export default function SubscriptionsManager() {
         return false;
       }
       if (filterTags.length > 0) {
-        const hasAny = filterTags.some((t) => s.tags.includes(t));
-        if (!hasAny) {
+        const hasAll = filterTags.some((t) => s.tags.includes(t));
+        if (!hasAll) {
           return false;
         }
       }

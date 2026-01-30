@@ -103,8 +103,8 @@ export default function CredentialsManager() {
         return false;
       }
       if (filterTags.length > 0) {
-        const hasAny = filterTags.some((t) => c.tags.includes(t));
-        if (!hasAny) {
+        const hasAll = filterTags.every((t) => c.tags.includes(t));
+        if (!hasAll) {
           return false;
         }
       }
