@@ -19,6 +19,7 @@ export const toSubscription = (record: DBRecord, password: string) => {
       tags,
       note: jsonObj.note,
       active: jsonObj.active,
+      important: jsonObj.important ?? false,
     } as Subscription;
   } catch {
     return null;
@@ -36,6 +37,7 @@ export const encryptSubscription = (
     period: subscription.period,
     note: subscription.note,
     active: subscription.active,
+    important: subscription.important,
   });
   const tags = (subscription.tags || [])
     .map((tag) => encryptData(tag, password))

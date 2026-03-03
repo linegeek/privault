@@ -16,6 +16,7 @@ const emptyForm: SubscriptionFormData = {
   tags: [],
   note: '',
   active: true,
+  important: false,
 };
 
 interface SubscriptionDialogProps {
@@ -47,6 +48,7 @@ export default function SubscriptionDialog({
               tags: [...initial.tags],
               note: initial.note,
               active: initial.active,
+              important: initial.important,
             }
           : { ...emptyForm },
       );
@@ -95,6 +97,11 @@ export default function SubscriptionDialog({
         name: 'active',
         type: 'checkbox' as const,
         label: 'Active',
+      },
+      {
+        name: 'important',
+        type: 'checkbox' as const,
+        label: 'Important',
       },
     ],
     [allTags],

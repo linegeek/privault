@@ -15,4 +15,5 @@ export interface Subscription {
   tags: string[];
   note: string;
   active: boolean;
+  important: boolean;
 }

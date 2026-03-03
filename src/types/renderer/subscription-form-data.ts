@@ -8,4 +8,5 @@ export interface SubscriptionFormData {
   tags: string[];
   note: string;
   active: boolean;
+  important: boolean;
 }

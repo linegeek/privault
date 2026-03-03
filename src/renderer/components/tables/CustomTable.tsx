@@ -142,6 +142,8 @@ export default function CustomTable<T = unknown>({
                 sx={{
                   color: 'rgba(255,255,255,0.9)',
                   backgroundColor: 'rgba(0,0,0,0.8)',
+                  ...(col.width && { width: col.width }),
+                  ...(col.sx || {}),
                 }}
               >
                 {col.label}
@@ -188,7 +190,11 @@ export default function CustomTable<T = unknown>({
                       <TableCell
                         key={col.key}
                         align={col.align}
-                        sx={{ color: 'rgba(255,255,255,0.8)' }}
+                        sx={{
+                          color: 'rgba(255,255,255,0.8)',
+                          ...(col.width && { width: col.width }),
+                          ...(col.sx || {}),
+                        }}
                       >
                         {content as ReactNode}
                       </TableCell>

@@ -3,6 +3,7 @@ import { Box, Chip, Badge, IconButton, Typography } from '@mui/material';
 import {
   Add as AddIcon,
   FilterList as FilterListIcon,
+  Star as StarIcon,
 } from '@mui/icons-material';
 import {
   getAllSubscriptions,
@@ -166,6 +167,7 @@ export default function SubscriptionsManager() {
       tags: data.tags,
       note: data.note,
       active: data.active,
+      important: data.important,
     };
 
     const success = editing
@@ -200,6 +202,18 @@ export default function SubscriptionsManager() {
         label: 'No',
         visible: columnVisibility.no,
         render: (_value, _row, index) => (index !== undefined ? index + 1 : ''),
+      },
+      {
+        key: 'important',
+        label: '',
+        visible: columnVisibility.serviceName,
+        align: 'center' as const,
+        width: 20,
+        sx: { padding: 0 },
+        render: (_value, row) =>
+          row.important ? (
+            <StarIcon sx={{ color: '#fbbf24', fontSize: '1.2rem' }} />
+          ) : null,
       },
       {
         key: 'serviceName',
