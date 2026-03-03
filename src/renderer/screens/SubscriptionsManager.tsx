@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
-import { Box, Chip, Badge, IconButton } from '@mui/material';
+import { Box, Chip, Badge, IconButton, Typography } from '@mui/material';
 import {
   Add as AddIcon,
   FilterList as FilterListIcon,
@@ -24,6 +24,7 @@ import {
   isExpired,
   expiresInWeek,
   containsIgnoreCase,
+  expiresInDays,
 } from '../utils';
 import {
   ExpiryFilter,
@@ -180,8 +181,20 @@ export default function SubscriptionsManager() {
     }
   };
 
-  const columns: ColumnDefinition<Subscription>[] = useMemo(
-    () => [
+  const columns: ColumnDefinition<Subscription>[] = useMemo(() => {
+    const renderColoredByDueDate = (value: any, row: Subscription) => {
+      let color = 'inherit';
+
+      if (isExpired(row.dueDate)) {
+        color = 'red';
+      } else if (expiresInDays(row.dueDate, 2)) {
+        color = 'orange';
+      }
+
+      return <Typography sx={{ color }}>{value}</Typography>;
+    };
+
+    return [
       {
         key: 'no',
         label: 'No',
@@ -192,11 +205,13 @@ export default function SubscriptionsManager() {
         key: 'serviceName',
         label: 'Service Name',
         visible: columnVisibility.serviceName,
+        render: renderColoredByDueDate,
       },
       {
         key: 'dueDate',
         label: 'Due Date',
         visible: columnVisibility.dueDate,
+        render: renderColoredByDueDate,
       },
       {
         key: 'amount',
@@ -232,9 +247,8 @@ export default function SubscriptionsManager() {
         visible: columnVisibility.active,
         render: (value) => (value ? 'Yes' : 'No'),
       },
-    ],
-    [columnVisibility],
-  );
+    ];
+  }, [columnVisibility]);
 
   return (
     <ScreenLayout>
